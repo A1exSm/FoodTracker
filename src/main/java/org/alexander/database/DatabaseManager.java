@@ -1,9 +1,6 @@
 package org.alexander.database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * DatabaseManager is responsible for managing the database connection.
@@ -11,63 +8,63 @@ import java.sql.SQLException;
  */
 public class DatabaseManager {
     private static final String URL = "jdbc:sqlite:src/main/resources/data/data.sqlite";
+    private static final FileManager fileManager = new FileManager();
+    private static final TableConstructor tableConstructor = new TableConstructor();
+    private static final DataConstructor dataConstructor = new DataConstructor();
 
-    public static Connection connect() {
-        Connection conn = null;
-        if (!FileManager.isInitialised()) {
-            FileManager.initialise();
-        }
-        try {
-            conn = DriverManager.getConnection(URL);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return conn;
+    public static Connection connect() throws SQLException {
+        return DriverManager.getConnection(URL);
     }
+    /**
+     * Initialises the FileManager to handle file operations.
+     * This must be called before any database operations are performed.
+     */
+    public static void initialise() {
+        fileManager.initialise();
+    }
+
+    public static void save() {
+        fileManager.save();
+    }
+
+    public static boolean tableExists(String tableName) {
+        String query = "SELECT name AS table_name FROM sqlite_master WHERE type='table' AND name=?";
+        try (
+                Connection conn = connect();
+                java.sql.PreparedStatement stmt = conn.prepareStatement(query)
+                ) {
+            stmt.setString(1, tableName);
+            return stmt.executeQuery().next();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean entityExists(String entityName, String colName, String tableName) {
+        if (!tableExists(tableName)) {
+            throw new IllegalArgumentException("Table " + tableName + " does not exist");
+        }
+        String query = String.format("SELECT 1 FROM %s WHERE %s = ? LIMIT 1", tableName, colName);
+        try (
+                Connection conn = connect();
+                PreparedStatement stmt = conn.prepareStatement(query)
+                ) {
+            stmt.setString(1, entityName);
+            return stmt.executeQuery().next();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Creates A fresh database with the required tables.
      */
     protected static void createFreshData() {
-        try (Connection conn = DriverManager.getConnection(URL)) {
-            if (conn != null) {
-                java.sql.Statement stmt = conn.createStatement();
-                stmt.addBatch("""
-                       CREATE TABLE IF NOT EXISTS DATA (
-                           id INTEGER PRIMARY KEY,
-                           name TEXT NOT NULL
-                       );
-               """);
-                stmt.executeBatch();
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-    private static boolean isValidTable(String tableName) {
-        // TODO: need to add validation for table name to prevent SQL injection
-        return true;
-    }
+        tableConstructor.construct();
+        dataConstructor.construct();
 
-    /**
-     * Prints all entries in the specified table.
-     * Should only be used internally NEVER directly for user input
-     * @param tableName the name of the table to print
-     */
-    public static void printTable(String tableName) {
-        try (Connection conn = connect()) {
-            if (!isValidTable(tableName)) {
-                throw new IllegalArgumentException("Invalid table name");
-            }
-            ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM " + tableName + ";");
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String name = rs.getString("name");
-                System.out.println(id + "\t" + name);
-            }
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
     }
 }

@@ -1,11 +1,9 @@
 package org.alexander;
 
 import org.alexander.database.DatabaseManager;
-import org.alexander.database.FileManager;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Main class to test the database connection and operations.
@@ -13,15 +11,20 @@ import java.sql.SQLException;
  */
 public class Main {
     public static void main(String[] args) {
-//        try (Connection conn = DatabaseManager.connect()) {
-//            java.sql.Statement stmt = conn.createStatement();
-//            stmt.addBatch("INSERT INTO DATA (name) VALUES ('Cabbage');");
-//            stmt.executeBatch();
-//
-//        } catch (SQLException e) {
-//            System.out.println(e.getMessage());
-//        }
-        DatabaseManager.printTable("DATA");
-//        FileManager.save();
+        DatabaseManager.initialise();
+        try (var conn = DatabaseManager.connect()) {
+            if (conn == null) {
+                throw new SQLException("Cannot connect to database");
+            }
+            Statement stmt = conn.createStatement();
+            var rs = stmt.executeQuery("SELECT name FROM FOOD_TYPE");
+            while (rs.next()) {
+                System.out.println(rs.getString("name"));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+        DatabaseManager.save();
     }
 }

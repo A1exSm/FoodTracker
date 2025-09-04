@@ -12,15 +12,14 @@ import java.nio.file.StandardCopyOption;
  * @since 1.0.0
  */
 public class FileManager {
-    protected static final String FOLDER_NAME = "FoodTracker";
-    protected static final String FILE_NAME = "data.sqlite";
-    protected static boolean initialised = false;
+    private static final String FOLDER_NAME = "FoodTracker";
+    private static final String FILE_NAME = "data.sqlite";
+    private static boolean initialised = false;
 
-    public static boolean isInitialised() {
-        return initialised;
-    }
-
-    protected static void initialise() {
+    public void initialise() {
+        if (initialised) {
+            throw new IllegalStateException("FileManager already initialised");
+        }
         boolean isFileNew = startHandler();
         if (isFileNew) {
             System.out.println("Debug: New file created, initializing fresh data...");
@@ -30,11 +29,16 @@ public class FileManager {
         }
         initialised = true;
     }
+
+    public boolean isRunning() {
+        return !initialised;
+    }
+
     /**
      * Handles the folder and file verification and creation process.
      * @return returns true if the file is new, and false if it already existed.
      */
-    private static boolean startHandler() {
+    private boolean startHandler() {
         String userHome = System.getProperty("user.home");
         boolean isFolderNew = folderHandler(userHome);
         return fileHandler(userHome, isFolderNew);
@@ -44,7 +48,7 @@ public class FileManager {
      * Checks if the folder exists, if not creates it.
      * @return if folder was created, returns true, if it already existed, returns false.
      */
-    private static boolean folderHandler(String userHome) {
+    private boolean folderHandler(String userHome) {
         Path folderPath = Paths.get(userHome, FOLDER_NAME);
         File folder = folderPath.toFile();
         if (!folder.exists()) {
@@ -61,7 +65,7 @@ public class FileManager {
      * Checks if the file exists, if not creates it. If a backup file exists, it copies it to the main file.
      * @return returns true if the file is new, and false if it already existed.
      */
-    private static boolean fileHandler(String userHome, boolean isFolderNew) {
+    private boolean fileHandler(String userHome, boolean isFolderNew) {
         Path filePath = Paths.get(userHome, FOLDER_NAME, FILE_NAME);
         File file = filePath.toFile();
         if (!file.exists()) {
@@ -96,7 +100,7 @@ public class FileManager {
         return false; // File already existed
     }
 
-    private static void copyToLiveDatabase() {
+    private void copyToLiveDatabase() {
         String userHome = System.getProperty("user.home");
         Path sourcePath = Paths.get(userHome, FOLDER_NAME, FILE_NAME);
         Path destinationPath = Paths.get("src/main/resources/data/data.sqlite");
@@ -116,9 +120,10 @@ public class FileManager {
      * Saves the current live database to the user's directory.
      * Overwrites any existing file.
      */
-    public static void save() {
+    public void save() {
         if (!initialised) {
-            throw new IllegalStateException("FileManager not initialised");
+            System.err.println("Debug: FileManager not initialised, cannot save.");
+            return;
         }
         String userHome = System.getProperty("user.home");
         Path sourcePath = Paths.get("src/main/resources/data/data.sqlite");
