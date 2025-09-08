@@ -11,10 +11,20 @@ public class DatabaseManager {
     private static final FileManager fileManager = new FileManager();
     private static final TableConstructor tableConstructor = new TableConstructor();
     private static final DataConstructor dataConstructor = new DataConstructor();
-
+    private static Connection currentConnection = null;
+    /**
+     * Connects to the database specified by the URL.
+     * @return Connection object to the database.
+     * @throws SQLException if a database access error occurs or the url is null.
+     */
     public static Connection connect() throws SQLException {
-        return DriverManager.getConnection(URL);
+        if (currentConnection != null && !currentConnection.isClosed()) {
+            throw new SQLException("Please close the existing connection before opening a new one.");
+        }
+        currentConnection = DriverManager.getConnection(URL);
+        return currentConnection;
     }
+
     /**
      * Initialises the FileManager to handle file operations.
      * This must be called before any database operations are performed.
@@ -26,38 +36,6 @@ public class DatabaseManager {
     public static void save() {
         fileManager.save();
     }
-
-    public static boolean tableExists(String tableName) {
-        String query = "SELECT name AS table_name FROM sqlite_master WHERE type='table' AND name=?";
-        try (
-                Connection conn = connect();
-                java.sql.PreparedStatement stmt = conn.prepareStatement(query)
-                ) {
-            stmt.setString(1, tableName);
-            return stmt.executeQuery().next();
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
-    }
-
-    public static boolean entityExists(String entityName, String colName, String tableName) {
-        if (!tableExists(tableName)) {
-            throw new IllegalArgumentException("Table " + tableName + " does not exist");
-        }
-        String query = String.format("SELECT 1 FROM %s WHERE %s = ? LIMIT 1", tableName, colName);
-        try (
-                Connection conn = connect();
-                PreparedStatement stmt = conn.prepareStatement(query)
-                ) {
-            stmt.setString(1, entityName);
-            return stmt.executeQuery().next();
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
-    }
-
 
     /**
      * Creates A fresh database with the required tables.

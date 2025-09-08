@@ -21,9 +21,13 @@ class TableConstructor {
         try(java.sql.Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("SELECT name AS table_name FROM sqlite_master WHERE type='table'");
             while (rs.next()) {
-                String tableName = rs.getString("table_name");
-                System.out.println("Debug: Dropped table " + tableName);
-                stmt.executeUpdate("DROP TABLE IF EXISTS " + tableName);
+                for (Tables table : Tables.values()) {
+                    String tableName = rs.getString("table_name");
+                    if (rs.getString("table_name").equals(table.name())) {
+                        stmt.executeUpdate("DROP TABLE IF EXISTS " + tableName);
+                        System.out.println("Debug: Dropped table " + tableName);
+                    }
+                }
             }
         }
     }

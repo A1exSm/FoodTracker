@@ -21,5 +21,5 @@ public interface FoodTypeDaoInterface {
      * @return a list of all food type names
      * @throws SQLException if a database access error occurs
      */
-    List<String> getFoodTypes() throws SQLException;
+    List<String> getFoodTypes();
 }

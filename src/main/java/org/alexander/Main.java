@@ -1,6 +1,7 @@
 package org.alexander;
 
 import org.alexander.database.DatabaseManager;
+import org.alexander.database.dao.FoodTypeDao;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -12,19 +13,7 @@ import java.sql.Statement;
 public class Main {
     public static void main(String[] args) {
         DatabaseManager.initialise();
-        try (var conn = DatabaseManager.connect()) {
-            if (conn == null) {
-                throw new SQLException("Cannot connect to database");
-            }
-            Statement stmt = conn.createStatement();
-            var rs = stmt.executeQuery("SELECT name FROM FOOD_TYPE");
-            while (rs.next()) {
-                System.out.println(rs.getString("name"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
+        new FoodTypeDao().getFoodTypes().forEach(System.out::println);
         DatabaseManager.save();
     }
 }
