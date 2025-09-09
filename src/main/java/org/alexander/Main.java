@@ -1,10 +1,7 @@
 package org.alexander;
 
 import org.alexander.database.DatabaseManager;
-import org.alexander.database.dao.FoodTypeDao;
-
-import java.sql.SQLException;
-import java.sql.Statement;
+import org.alexander.database.foodtype.dao.FoodTypeDao;
 
 /**
  * Main class to test the database connection and operations.
@@ -13,7 +10,7 @@ import java.sql.Statement;
 public class Main {
     public static void main(String[] args) {
         DatabaseManager.initialise();
-        new FoodTypeDao().getFoodTypes().forEach(System.out::println);
+        new FoodTypeDao().getFoodTypeList().forEach(foodType -> System.out.println(foodType.getName()));
         DatabaseManager.save();
     }
 }

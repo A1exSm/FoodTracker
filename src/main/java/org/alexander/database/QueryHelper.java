@@ -8,7 +8,7 @@ import java.util.List;
 
 public class QueryHelper {
     /**
-     * adds an entity to a table, given the attribute to insert into.
+     * adds an entity of type String to a table, given the attribute to insert into.
      * Validation/whitelisting of table and attribute names is the responsibility of the caller.
      * Should NOT be called on user input without validation/whitelisting
      * @param entity the entity to add
@@ -23,6 +23,28 @@ public class QueryHelper {
                 PreparedStatement stmt = conn.prepareStatement(query)
         ) {
             stmt.setString(1, entity);
+            return stmt.executeUpdate() > 0; // affected rows > 0
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+    /**
+     * adds an integer entity to a table, given the attribute to insert into.
+     * Validation/whitelisting of table and attribute names is the responsibility of the caller.
+     * Should NOT be called on user input without validation/whitelisting
+     * @param entity the entity to add
+     * @param attribute the attribute/column to insert into
+     * @param table the table to insert into
+     * @return true if the entity was added, false otherwise
+     */
+    public static boolean addEntity(int entity, String attribute, String table) {
+        String query = "INSERT INTO " + table + " (" + attribute + ") VALUES (?)";
+        try (
+                var conn = DatabaseManager.connect();
+                PreparedStatement stmt = conn.prepareStatement(query)
+        ) {
+            stmt.setInt(1, entity);
             return stmt.executeUpdate() > 0; // affected rows > 0
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -51,6 +73,30 @@ public class QueryHelper {
             return false;
         }
     }
+
+    /**
+     * deletes an integer entity from a table, given the attribute to match.
+     * Validation/whitelisting of table and attribute names is the responsibility of the caller.
+     * Should NOT be called on user input without validation/whitelisting
+     * @param entity the entity to delete
+     * @param attribute the attribute/column to match
+     * @param table the table to delete from
+     * @return true if the entity was deleted, false otherwise
+     */
+    public static boolean deleteEntity(int entity, String attribute, String table) {
+        String query = "DELETE FROM " + table + " WHERE " + attribute + " = ?";
+        try (
+                var conn = DatabaseManager.connect();
+                PreparedStatement stmt = conn.prepareStatement(query)
+        ) {
+            stmt.setInt(1, entity);
+            return stmt.executeUpdate() > 0; // affected rows > 0
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
     /**
      * checks if a table exists in the database
      * @param tableName the name of the table to check

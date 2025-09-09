@@ -43,6 +43,5 @@ public class DatabaseManager {
     protected static void createFreshData() {
         tableConstructor.construct();
         dataConstructor.construct();
-
     }
 }

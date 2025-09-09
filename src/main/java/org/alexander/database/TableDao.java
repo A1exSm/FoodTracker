@@ -1,6 +1,6 @@
-package org.alexander.database.dao;
+package org.alexander.database;
 
-public interface tableDao {
+public interface TableDao {
     /**
      * Checks if a value with the given name exists in the table.
      * @param entity the entity to check

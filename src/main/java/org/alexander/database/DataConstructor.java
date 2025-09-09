@@ -1,9 +1,8 @@
 package org.alexander.database;
 
-import org.alexander.database.dao.FoodTypeDao;
+import org.alexander.database.foodtype.dao.FoodTypeDao;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 class DataConstructor {
