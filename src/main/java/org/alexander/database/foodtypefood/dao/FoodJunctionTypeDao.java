@@ -99,7 +99,7 @@ public class FoodJunctionTypeDao implements FoodJunctionTypeDaoInterface, TableD
                 PreparedStatement preparedStatement = conn.prepareStatement(query);
         ) {
             preparedStatement.setString(1, food.getName());
-            ResultSet rs = preparedStatement.executeQuery(query);
+            ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 foodTypeList.add(new FoodType(rs.getString("type")));
             }

@@ -30,4 +30,6 @@ public interface FoodTypeDaoInterface {
      * @throws SQLException if a database access error occurs
      */
     List<FoodType> getFoodTypeList();
+
+    FoodType getFoodType(String name);
 }

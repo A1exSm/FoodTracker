@@ -1,5 +1,7 @@
 package org.alexander.database;
 
+import org.alexander.logging.CentralLogger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -106,7 +108,7 @@ public class FileManager {
         Path destinationPath = Paths.get("src/main/resources/data/data.sqlite");
         try {
             Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Debug: Data copied to live database successfully.");
+            CentralLogger.getInstance().logInfo("[Debug] Data copied to live database successfully.");
             if (destinationPath.toFile().length() == 0) {
                 System.out.println("Debug: Warning - Live database file is empty after copy.");
                 DatabaseManager.createFreshData();

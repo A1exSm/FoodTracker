@@ -51,6 +51,13 @@ public class FoodTypeDao implements  FoodTypeDaoInterface, TableDao {
         return foodTypeList;
     }
 
+    @Override
+    public FoodType getFoodType(String name) {
+        if (contains(name, "name")) {
+            return new FoodType(name);
+        }
+        return null;
+    }
     /**
      * {@inheritDoc}
      */
