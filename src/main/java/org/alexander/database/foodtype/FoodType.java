@@ -16,5 +16,6 @@ public class FoodType extends Entity<String> {
 
     public void setName(String name) {
         this.name = name;
+        setKey(name);
     }
 }

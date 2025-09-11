@@ -11,9 +11,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class FoodDaoTest {
     private FoodDao foodDao;
     private Food food;
-    static {
-        DatabaseManager.initialise();
-    }
 
     @BeforeEach
     void setUp() {

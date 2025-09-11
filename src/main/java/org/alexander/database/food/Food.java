@@ -29,6 +29,7 @@ public class Food extends Entity<String> {
 
     public void setName(String name) {
         this.name = name;
+        setKey(name);
     }
 
     public void setServingGrams(Double servingGrams) {
