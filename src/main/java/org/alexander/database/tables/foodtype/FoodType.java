@@ -1,4 +1,4 @@
-package org.alexander.database.foodtype;
+package org.alexander.database.tables.foodtype;
 
 import org.alexander.database.Entity;
 

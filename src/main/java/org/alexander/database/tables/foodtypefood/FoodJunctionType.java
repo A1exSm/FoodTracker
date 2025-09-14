@@ -1,9 +1,9 @@
-package org.alexander.database.foodtypefood;
+package org.alexander.database.tables.foodtypefood;
 
 import org.alexander.database.CompoundKey;
 import org.alexander.database.Entity;
-import org.alexander.database.food.Food;
-import org.alexander.database.foodtype.FoodType;
+import org.alexander.database.tables.food.Food;
+import org.alexander.database.tables.foodtype.FoodType;
 
 public class FoodJunctionType extends Entity<CompoundKey<String, String>> {
     private String name;

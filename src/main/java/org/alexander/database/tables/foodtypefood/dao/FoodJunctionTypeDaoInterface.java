@@ -1,8 +1,8 @@
-package org.alexander.database.foodtypefood.dao;
+package org.alexander.database.tables.foodtypefood.dao;
 
-import org.alexander.database.food.Food;
-import org.alexander.database.foodtype.FoodType;
-import org.alexander.database.foodtypefood.FoodJunctionType;
+import org.alexander.database.tables.food.Food;
+import org.alexander.database.tables.foodtype.FoodType;
+import org.alexander.database.tables.foodtypefood.FoodJunctionType;
 import java.util.List;
 
 public interface FoodJunctionTypeDaoInterface {

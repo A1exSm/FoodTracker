@@ -1,4 +1,4 @@
-package org.alexander.database.food;
+package org.alexander.database.tables.food;
 
 import org.alexander.database.QueryHelper;
 import org.alexander.database.TableDao;
@@ -22,8 +22,8 @@ public class FoodDao implements FoodDaoInterface, TableDao {
                 PreparedStatement preparedStatement = conn.prepareStatement(query);
         ) {
             preparedStatement.setString(1, name);
-            checkNull(preparedStatement, 2, serving_grams);
-            checkNull(preparedStatement, 3, serving_calories);
+            QueryHelper.checkNull(preparedStatement, 2, serving_grams);
+            QueryHelper.checkNull(preparedStatement, 3, serving_calories);
             if (preparedStatement.executeUpdate() > 0) {
                 return new Food(name, serving_grams, serving_calories);
             }
@@ -107,8 +107,8 @@ public class FoodDao implements FoodDaoInterface, TableDao {
                 var conn = org.alexander.database.DatabaseManager.connect();
                 PreparedStatement preparedStatement = conn.prepareStatement(query);
         ) {
-            checkNull(preparedStatement, 1, serving_grams);
-            checkNull(preparedStatement, 2, serving_calories);
+            QueryHelper.checkNull(preparedStatement, 1, serving_grams);
+            QueryHelper.checkNull(preparedStatement, 2, serving_calories);
             preparedStatement.setString(3, name);
             if (preparedStatement.executeUpdate() > 0) {
                 return new Food(name, serving_grams, serving_calories);
@@ -132,11 +132,4 @@ public class FoodDao implements FoodDaoInterface, TableDao {
         }
     }
 
-    private void checkNull( PreparedStatement statement, int index, Double value) throws SQLException {
-        if (value == null) {
-            statement.setNull(index, java.sql.Types.DOUBLE);
-        } else {
-            statement.setDouble(index, value);
-        }
-    }
 }

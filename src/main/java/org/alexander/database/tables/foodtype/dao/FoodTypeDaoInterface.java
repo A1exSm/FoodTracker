@@ -1,6 +1,6 @@
-package org.alexander.database.foodtype.dao;
+package org.alexander.database.tables.foodtype.dao;
 
-import org.alexander.database.foodtype.FoodType;
+import org.alexander.database.tables.foodtype.FoodType;
 
 import java.sql.SQLException;
 import java.util.List;

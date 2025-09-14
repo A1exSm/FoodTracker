@@ -1,12 +1,17 @@
 package org.alexander.database;
 
+import org.alexander.logging.CentralLogger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class QueryHelper {
+    private static final CentralLogger logger = CentralLogger.getInstance();
     /**
      * adds an entity of type String to a table, given the attribute to insert into.
      * Validation/whitelisting of table and attribute names is the responsibility of the caller.
@@ -51,28 +56,6 @@ public class QueryHelper {
             return false;
         }
     }
-    /**
-     * deletes an entity from a table, given the attribute to match.
-     * Validation/whitelisting of table and attribute names is the responsibility of the caller.
-     * Should NOT be called on user input without validation/whitelisting
-     * @param entity the entity to delete
-     * @param attribute the attribute/column to match
-     * @param table the table to delete from
-     * @return true if the entity was deleted, false otherwise
-     */
-    public static boolean deleteEntity(String entity, String attribute, String table) {
-        String query = "DELETE FROM " + table + " WHERE " + attribute + " = ?";
-        try (
-                var conn = DatabaseManager.connect();
-                PreparedStatement stmt = conn.prepareStatement(query)
-        ) {
-            stmt.setString(1, entity);
-            return stmt.executeUpdate() > 0; // affected rows > 0
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
-    }
 
     /**
      * deletes an integer entity from a table, given the attribute to match.
@@ -83,14 +66,23 @@ public class QueryHelper {
      * @param table the table to delete from
      * @return true if the entity was deleted, false otherwise
      */
-    public static boolean deleteEntity(int entity, String attribute, String table) {
+    public static <T> boolean deleteEntity(T entity, String attribute, String table) {
         String query = "DELETE FROM " + table + " WHERE " + attribute + " = ?";
         try (
                 var conn = DatabaseManager.connect();
                 PreparedStatement stmt = conn.prepareStatement(query)
         ) {
-            stmt.setInt(1, entity);
-            return stmt.executeUpdate() > 0; // affected rows > 0
+            if (typeSwitcher(stmt, entity, 1)) {
+                if (stmt.executeUpdate() > 0) {
+                    return true; // affected rows > 0
+                } else {
+                    logger.logWarning("No rows affected when trying to delete entity: " + entity);
+                    return false;
+                }
+            } else {
+                logger.logError("Unsupported entity type: " + entity.getClass().getName());
+                return false;
+            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return false;
@@ -125,7 +117,7 @@ public class QueryHelper {
      * @return true if the entity exists, false otherwise
      * @throws IllegalArgumentException if the table does not exist
      */
-    public static boolean entityExists(String entityName, String colName, String tableName) {
+    public static <T> boolean entityExists(T entityName, String colName, String tableName) {
         if (!tableExists(tableName)) {
             throw new IllegalArgumentException("Table " + tableName + " does not exist");
         }
@@ -134,12 +126,51 @@ public class QueryHelper {
                 Connection conn = DatabaseManager.connect();
                 PreparedStatement stmt = conn.prepareStatement(query)
         ) {
-            stmt.setString(1, entityName);
-            return stmt.executeQuery().next();
+            if (typeSwitcher(stmt, entityName, 1)) {
+                return stmt.executeQuery().next();
+            } else {
+                logger.logError("Unsupported entity type: " + entityName.getClass().getName());
+                return false;
+            }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return false;
         }
+    }
+
+    private static <T> boolean typeSwitcher(PreparedStatement preparedStatement, T entityName, int parameterIndex) throws SQLException {
+        switch (entityName) {
+            case Integer intName -> preparedStatement.setInt(parameterIndex, intName);
+            case String stringName -> preparedStatement.setString(parameterIndex, stringName);
+            case Double doubleName -> preparedStatement.setDouble(parameterIndex, doubleName);
+            case LocalDate date -> {
+                regexCheckDateFormat(date);
+                preparedStatement.setDate(parameterIndex, java.sql.Date.valueOf(date));
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * checks if a date string is formatted correctly as yyyy-MM-dd
+     * @param date the date string to check
+     * @throws IllegalArgumentException if the date is not formatted correctly
+     */
+    public static void regexCheckDateFormat(String date) {
+        if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            throw new IllegalArgumentException("Date is not formatted correctly: " + date + ". Expected format: yyyy-MM-dd");
+        }
+    }
+    /**
+     * checks if a LocalDate is formatted correctly as yyyy-MM-dd
+     * @param date the LocalDate to check
+     * @throws IllegalArgumentException if the date is not formatted correctly
+     */
+    public static void regexCheckDateFormat(LocalDate date) {
+        regexCheckDateFormat(date.toString());
     }
 
     /**
@@ -168,6 +199,14 @@ public class QueryHelper {
             System.err.println("Error: " + e.getMessage());
         }
         return resultsList;
+    }
+
+    public static void checkNull( PreparedStatement statement, int index, Double value) throws SQLException {
+        if (value == null) {
+            statement.setNull(index, java.sql.Types.DOUBLE);
+        } else {
+            statement.setDouble(index, value);
+        }
     }
 
 }

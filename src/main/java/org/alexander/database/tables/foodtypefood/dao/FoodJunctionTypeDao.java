@@ -1,13 +1,13 @@
-package org.alexander.database.foodtypefood.dao;
+package org.alexander.database.tables.foodtypefood.dao;
 
 import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
 import org.alexander.database.TableDao;
-import org.alexander.database.food.Food;
-import org.alexander.database.food.FoodDao;
-import org.alexander.database.foodtype.FoodType;
-import org.alexander.database.foodtype.dao.FoodTypeDao;
-import org.alexander.database.foodtypefood.FoodJunctionType;
+import org.alexander.database.tables.food.Food;
+import org.alexander.database.tables.food.FoodDao;
+import org.alexander.database.tables.foodtype.FoodType;
+import org.alexander.database.tables.foodtype.dao.FoodTypeDao;
+import org.alexander.database.tables.foodtypefood.FoodJunctionType;
 import org.alexander.logging.CentralLogger;
 
 import java.sql.*;

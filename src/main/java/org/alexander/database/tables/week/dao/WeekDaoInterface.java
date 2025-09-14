@@ -1,6 +1,6 @@
-package org.alexander.database.week.dao;
+package org.alexander.database.tables.week.dao;
 
-import org.alexander.database.week.Week;
+import org.alexander.database.tables.week.Week;
 
 import java.time.LocalDate;
 import java.util.List;

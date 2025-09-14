@@ -1,4 +1,4 @@
-package org.alexander.database.food;
+package org.alexander.database.tables.food;
 
 import java.util.List;
 

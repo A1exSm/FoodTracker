@@ -5,7 +5,7 @@ import org.junit.platform.suite.api.Suite;
 @Suite
 @SelectClasses({
         FoodDaoTest.class,
-        WeekDaoTest.class
+        WeekDayDaoTest.class
 })
 
 public class AllTests {

@@ -1,7 +1,6 @@
-package org.alexander.database.food;
+package org.alexander.database.tables.food;
 
 import org.alexander.database.Entity;
-import org.alexander.database.foodtype.FoodType;
 
 public class Food extends Entity<String> {
     private String name;

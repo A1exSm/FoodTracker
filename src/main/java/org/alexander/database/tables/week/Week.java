@@ -1,6 +1,7 @@
-package org.alexander.database.week;
+package org.alexander.database.tables.week;
 
 import org.alexander.database.Entity;
+import org.alexander.logging.CentralLogger;
 
 import java.time.LocalDate;
 
@@ -11,6 +12,10 @@ public class Week extends Entity<Integer> {
 
     public Week(int id, LocalDate startDate, LocalDate endDate) {
         super(id);
+        if (startDate.getDayOfWeek().getValue() != 1 || endDate.getDayOfWeek().getValue() != 7) {
+            String message = String.format("Invalid week range: start date '%s' is not a Monday or end date '%s' is not a Sunday. StartDate is a '%s' and EndDate is a '%s'.", startDate, endDate, startDate.getDayOfWeek(), endDate.getDayOfWeek());
+            CentralLogger.getInstance().logError(new IllegalArgumentException(message));
+        }
         this.id = id;
         this.startDate = startDate;
         this.endDate = endDate;

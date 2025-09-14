@@ -1,8 +1,7 @@
 package org.alexander;
 
-import org.alexander.database.DatabaseManager;
-import org.alexander.database.food.Food;
-import org.alexander.database.food.FoodDao;
+import org.alexander.database.tables.food.Food;
+import org.alexander.database.tables.food.FoodDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

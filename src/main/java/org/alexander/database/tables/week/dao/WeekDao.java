@@ -1,9 +1,9 @@
-package org.alexander.database.week.dao;
+package org.alexander.database.tables.week.dao;
 
 import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
 import org.alexander.database.TableDao;
-import org.alexander.database.week.Week;
+import org.alexander.database.tables.week.Week;
 import org.alexander.logging.CentralLogger;
 
 import java.sql.SQLException;
@@ -17,32 +17,16 @@ public class WeekDao implements WeekDaoInterface, TableDao {
     @Override
     public boolean contains(String entity, String attribute) {
         validateAttribute(attribute);
-        String query = "SELECT 1 FROM WEEK WHERE " + attribute + " = ?";
-        try (
-                var conn = DatabaseManager.connect();
-                var preparedStatement = conn.prepareStatement(query)
-                ) {
-            if (attribute.equals("week_id")) {
-                preparedStatement.setInt(1, Integer.parseInt(entity));
-            } else if (attribute.equals("start_date") || attribute.equals("end_date")) {
-                if (!isDateFormatedCorrectly(entity)) {
-                    throw new IllegalArgumentException("Date is not formatted correctly: " + entity + ". Expected format: dd-MM-yyyy");
-                }
-                preparedStatement.setDate(1, java.sql.Date.valueOf(entity)); // assuming entity is in ISO_LOCAL_DATE format
-            } else {
-                throw new IllegalArgumentException("Invalid attribute: " + attribute + ", passed validation but not handled.");
-            }
-            return preparedStatement.executeQuery().next();
-
-        } catch (SQLException e) {
-            CentralLogger.getInstance().logError(e);
+        if (attribute.equals("week_id")) {
+            return QueryHelper.entityExists(Integer.parseInt(entity), "week_id", "WEEK");
+        } else if (attribute.equals("start_date") || attribute.equals("end_date")) {
+            QueryHelper.regexCheckDateFormat(entity);
+            return QueryHelper.entityExists(LocalDate.parse(entity), attribute, "WEEK");
+        } else {
+            throw new IllegalArgumentException("Invalid attribute: " + attribute + ", passed validation but not handled.");
         }
-        return false;
     }
 
-    private boolean isDateFormatedCorrectly(String date) {
-       return date.matches("\\d{4}-\\d{2}-\\d{2}");
-    }
 
     private LocalDate sqlDateToLocalDate(java.sql.Date sqlDate) {
         if (sqlDate == null) {
@@ -60,13 +44,17 @@ public class WeekDao implements WeekDaoInterface, TableDao {
 
     @Override
     public Week addWeek(LocalDate startDate, LocalDate endDate) {
+        // need to ensure the start day is a Monday and end day is a Sunday
+        if (startDate.getDayOfWeek().getValue() != 1 || endDate.getDayOfWeek().getValue() != 7) {
+            String message = String.format("Invalid week range: start date '%s' is not a Monday or end date '%s' is not a Sunday. StartDate is a '%s' and EndDate is a '%s'.", startDate, endDate, startDate.getDayOfWeek(), endDate.getDayOfWeek());
+            CentralLogger.getInstance().logError(message);
+            return null;
+        }
         if (contains(startDate.toString(), "start_date")) {
             CentralLogger.getInstance().logWarning(String.format("Week with start date '%s' already exists.", startDate));
             return null;
         }
-        if (!isDateFormatedCorrectly(startDate.toString()) && !isDateFormatedCorrectly(endDate.toString())) {
-            throw new IllegalArgumentException("Date is not formatted correctly. Expected format: dd-MM-yyyy");
-        }
+        // removed regex check since LocalDate parsing already enforces correct format
         String query = "INSERT INTO WEEK (start_date, end_date) VALUES (?, ?)";
         try (
                 var conn = DatabaseManager.connect();
