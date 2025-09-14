@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -137,16 +138,22 @@ public class QueryHelper {
             return false;
         }
     }
-
-    private static <T> boolean typeSwitcher(PreparedStatement preparedStatement, T entityName, int parameterIndex) throws SQLException {
+    /**
+     * sets the appropriate type on a PreparedStatement based on the type of the entityName parameter.
+     * Supported types are Integer, String, Double, LocalDate, and LocalTime.
+     * @param preparedStatement the PreparedStatement to set the type on
+     * @param entityName the entity to set
+     * @param parameterIndex the index of the parameter to set (1-based)
+     * @return true if the type was set successfully, false otherwise
+     * @throws SQLException if a database access error occurs
+     */
+    public static <T> boolean typeSwitcher(PreparedStatement preparedStatement, T entityName, int parameterIndex) throws SQLException {
         switch (entityName) {
             case Integer intName -> preparedStatement.setInt(parameterIndex, intName);
             case String stringName -> preparedStatement.setString(parameterIndex, stringName);
             case Double doubleName -> preparedStatement.setDouble(parameterIndex, doubleName);
-            case LocalDate date -> {
-                regexCheckDateFormat(date);
-                preparedStatement.setDate(parameterIndex, java.sql.Date.valueOf(date));
-            }
+            case LocalDate dateName -> preparedStatement.setDate(parameterIndex, java.sql.Date.valueOf(dateName));
+            case LocalTime timeName -> preparedStatement.setTime(parameterIndex, java.sql.Time.valueOf(timeName));
             default -> {
                 return false;
             }
