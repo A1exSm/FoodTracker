@@ -9,6 +9,7 @@ import java.util.List;
 public interface DayDaoInterface {
     Day addDay(LocalDate date, int week_id, Double bodyWeight);
     Day addDay(LocalDate date, int week_id); // bodyWeight is null
+    Day addDay(LocalDate date); // week_id and bodyWeight are null
     Day addDay(Day day);
     boolean deleteDay(LocalDate date);
     boolean deleteDay(Day day);

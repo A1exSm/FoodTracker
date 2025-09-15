@@ -74,10 +74,10 @@ public class QueryHelper {
                 PreparedStatement stmt = conn.prepareStatement(query)
         ) {
             if (typeSwitcher(stmt, entity, 1)) {
-                if (stmt.executeUpdate() > 0) {
-                    return true; // affected rows > 0
+                if (effectedRowsHandler(stmt.executeUpdate())) {
+                    return true; // affected rows == 1
                 } else {
-                    logger.logWarning("No rows affected when trying to delete entity: " + entity);
+                    logger.logWarning("No rows or > 1 affected when trying to delete entity: " + entity);
                     return false;
                 }
             } else {
@@ -214,6 +214,23 @@ public class QueryHelper {
         } else {
             statement.setDouble(index, value);
         }
+    }
+
+    /**
+     * Handles the result of an INSERT operation by checking the number of affected rows.
+     * @param affectedRows the number of rows affected by the INSERT operation
+     * @return true if exactly one row was affected, false otherwise
+     */
+    public static boolean effectedRowsHandler(int affectedRows) {
+        if (affectedRows != 1) {
+            if (affectedRows == 0) {
+                logger.logWarning("Insert failed - no rows affected");
+            } else {
+                logger.logWarning("Unexpected: " + affectedRows + " rows affected by single INSERT");
+            }
+            return false;
+        }
+        return true;
     }
 
 }

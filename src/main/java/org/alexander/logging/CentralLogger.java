@@ -34,5 +34,22 @@ public class CentralLogger {
 
     public void logError(Throwable t) {
         logger.error(t.getMessage(), t);
+        StackTraceElement[] stackTrace = t.getStackTrace();
+        // Index 0: Where the exception occurred
+        if (stackTrace.length > 0) {
+            StackTraceElement origin = stackTrace[0];
+            logger.error("Exception occurred at: {}:{} in method {}",
+                    origin.getFileName(),
+                    origin.getLineNumber(),
+                    origin.getMethodName());
+        }
+        // Index 1: The calling method
+        if (stackTrace.length > 1) {
+            StackTraceElement caller = stackTrace[1];
+            logger.error("Called from: {}:{} in method {}",
+                    caller.getFileName(),
+                    caller.getLineNumber(),
+                    caller.getMethodName());
+        }
     }
 }

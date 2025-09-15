@@ -2,11 +2,12 @@ package org.alexander.database.tables.week.dao;
 
 import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
-import org.alexander.database.TableDao;
+import org.alexander.database.tables.TableDao;
 import org.alexander.database.tables.week.Week;
 import org.alexander.logging.CentralLogger;
 
 import java.sql.SQLException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,7 +27,6 @@ public class WeekDao implements WeekDaoInterface, TableDao {
             throw new IllegalArgumentException("Invalid attribute: " + attribute + ", passed validation but not handled.");
         }
     }
-
 
     private LocalDate sqlDateToLocalDate(java.sql.Date sqlDate) {
         if (sqlDate == null) {
@@ -148,5 +148,21 @@ public class WeekDao implements WeekDaoInterface, TableDao {
             CentralLogger.getInstance().logError(e);
         }
         return null;
+    }
+
+    @Override
+    public LocalDate getClosestMonday(LocalDate date) {
+        if (date.getDayOfWeek().equals(DayOfWeek.MONDAY)) {
+            return date;
+        }
+        LocalDate returnDate;
+        int distance = date.getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue();
+        returnDate = date.minusDays(distance);
+       if (returnDate.getDayOfWeek().equals(DayOfWeek.MONDAY)) {
+           return returnDate;
+       } else {
+              CentralLogger.getInstance().logError(String.format("Failed to calculate closest Monday for date: %s, calculated date is: %s which is a %s", date.format(formatter), returnDate.format(formatter), returnDate.getDayOfWeek()));
+              return null;
+       }
     }
 }

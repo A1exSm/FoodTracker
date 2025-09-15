@@ -25,14 +25,14 @@ public class WeekDayDaoTest {
 
     @Test
     void testWeek() {
-       clearWeeks();
-        LocalDate start_date = LocalDate.now().minusDays(6);
+       clearWeeks(weekDao);
+        LocalDate start_date = weekDao.getClosestMonday(LocalDate.now());
         LocalDate end_date = start_date.plusDays(6);
-        week  = weekDao.addWeek(LocalDate.now().minusDays(6));
+        week  = weekDao.addWeek(weekDao.getClosestMonday(LocalDate.now()));
         assertNotNull(week);
         assertEquals(start_date, week.getStartDate());
         assertEquals(end_date, week.getEndDate());
-        assertTrue(weekDao.contains(String.valueOf(weekDao.getWeek(LocalDate.now().minusDays(6)).getId()), "week_id"));
+        assertTrue(weekDao.contains(String.valueOf(weekDao.getWeek(weekDao.getClosestMonday(LocalDate.now())).getId()), "week_id"));
         assertTrue(weekDao.deleteWeek(week));
     }
 
@@ -45,7 +45,7 @@ public class WeekDayDaoTest {
         return false;
     }
 
-    private void clearWeeks() {
+    public static void clearWeeks(WeekDao weekDao) {
         if (!weekDao.getWeekList().isEmpty()) {
             for (Week w : weekDao.getWeekList()) {
                 CentralLogger.getInstance().logInfo(String.format("\nDeleting week id: %d, start_date: %s, end_date: %s%n", w.getId(), w.getStartDate(), w.getEndDate()));
@@ -54,8 +54,7 @@ public class WeekDayDaoTest {
         }
     }
 
-    private void clearDays() {
-        DayDao dayDao = new DayDao();
+    public static void clearDays(DayDao dayDao) {
         if (!dayDao.getDayList().isEmpty()) {
             for (Day d : dayDao.getDayList()) {
                 CentralLogger.getInstance().logInfo(String.format("\nDeleting day date: %s, week_id: %d, body_weight: %s%n", d.getDate(), d.getWeek_id(), d.getBodyWeight()));
@@ -66,10 +65,10 @@ public class WeekDayDaoTest {
 
     @Test
     void testDay() {
-        clearWeeks();
-        clearDays();
+        clearWeeks(weekDao);
+        clearDays(new DayDao());
         // Week
-        week = weekDao.addWeek(LocalDate.now().minusDays(6));
+        week = weekDao.addWeek(weekDao.getClosestMonday(LocalDate.now()));
         assertNotNull(week);
         assertTrue(weekDao.contains(String.valueOf(week.getId()), "week_id"));
         // Day
@@ -84,7 +83,6 @@ public class WeekDayDaoTest {
         Day today = dayDao.getDay(LocalDate.now());
         assertNotNull(today);
         assertTrue(containsDay(today, dayDao.getDaysInWeek(week)));
-
         // Delete
         assertTrue(dayDao.deleteDay(addedDay));
         assertTrue(weekDao.deleteWeek(week));

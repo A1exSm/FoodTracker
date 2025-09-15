@@ -1,4 +1,4 @@
-package org.alexander.database;
+package org.alexander.database.tables;
 
 public enum Tables {
     WEEK,

@@ -13,4 +13,5 @@ public interface WeekDaoInterface {
     boolean deleteWeek(int id);
     List<Week> getWeekList();
     Week getWeek(LocalDate startDate);
+    LocalDate getClosestMonday(LocalDate date);
 }

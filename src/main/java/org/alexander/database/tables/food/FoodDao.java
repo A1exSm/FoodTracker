@@ -1,7 +1,7 @@
 package org.alexander.database.tables.food;
 
 import org.alexander.database.QueryHelper;
-import org.alexander.database.TableDao;
+import org.alexander.database.tables.TableDao;
 import org.alexander.logging.CentralLogger;
 
 import java.sql.Connection;

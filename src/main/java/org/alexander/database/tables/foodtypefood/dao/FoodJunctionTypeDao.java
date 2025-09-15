@@ -2,7 +2,7 @@ package org.alexander.database.tables.foodtypefood.dao;
 
 import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
-import org.alexander.database.TableDao;
+import org.alexander.database.tables.TableDao;
 import org.alexander.database.tables.food.Food;
 import org.alexander.database.tables.food.FoodDao;
 import org.alexander.database.tables.foodtype.FoodType;

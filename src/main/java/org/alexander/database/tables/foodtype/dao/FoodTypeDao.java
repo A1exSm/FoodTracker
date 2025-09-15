@@ -1,9 +1,9 @@
 package org.alexander.database.tables.foodtype.dao;
 
 import org.alexander.database.QueryHelper;
-import org.alexander.database.Tables;
+import org.alexander.database.tables.Tables;
 import org.alexander.database.tables.foodtype.FoodType;
-import org.alexander.database.TableDao;
+import org.alexander.database.tables.TableDao;
 
 import java.util.ArrayList;
 import java.util.List;

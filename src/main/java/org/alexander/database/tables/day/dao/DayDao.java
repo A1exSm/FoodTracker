@@ -2,7 +2,7 @@ package org.alexander.database.tables.day.dao;
 
 import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
-import org.alexander.database.TableDao;
+import org.alexander.database.tables.TableDao;
 import org.alexander.database.tables.day.Day;
 import org.alexander.database.tables.week.dao.WeekDao;
 import org.alexander.logging.CentralLogger;
@@ -61,6 +61,16 @@ public class DayDao implements DayDaoInterface, TableDao {
             logger.logError("Add Day failed: Exception occurred while inserting Day with date '" + date + "'. Exception: " + e.getMessage());
             return null;
         }
+    }
+
+    public Day addDay(LocalDate date) {
+        WeekDao weekDao = new WeekDao();
+        if (weekDao.contains(String.valueOf(weekDao.getClosestMonday(date)), "start_date")) {
+            int week_id = weekDao.getWeek(weekDao.getClosestMonday(date)).getId();
+            return addDay(date, week_id, null);
+        }
+        logger.logWarning("Add Day failed: No week exists for date '" + date + "'. Cannot add Day without a valid week_id.");
+        return null;
     }
 
     @Override

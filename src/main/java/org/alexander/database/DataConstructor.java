@@ -1,5 +1,6 @@
 package org.alexander.database;
 
+import org.alexander.database.tables.Tables;
 import org.alexander.database.tables.foodtype.dao.FoodTypeDao;
 
 import java.sql.Connection;

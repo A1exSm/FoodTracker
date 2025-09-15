@@ -1,5 +1,7 @@
 package org.alexander.database;
 
+import org.alexander.database.tables.Tables;
+
 import java.sql.*;
 
 class TableConstructor {

@@ -2,7 +2,7 @@ package org.alexander.database.tables.meal.dao;
 
 import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
-import org.alexander.database.TableDao;
+import org.alexander.database.tables.TableDao;
 import org.alexander.database.tables.day.Day;
 import org.alexander.database.tables.meal.Meal;
 import org.alexander.database.tables.meal.MealTypes;
@@ -12,8 +12,6 @@ import org.alexander.logging.CentralLogger;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +43,10 @@ public class MealDao implements MealDaoInterface, TableDao {
             logger.logError("SQL Exception in contains(date, time, type): " + e.getMessage());
             return false;
         }
+    }
+
+    public boolean contains (Meal meal) {
+        return QueryHelper.entityExists(meal.getId(), "id", "MEAL");
     }
 
 
