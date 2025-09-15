@@ -1,24 +1,23 @@
 package org.alexander.database.tables.foodtypefood;
 
+import org.alexander.database.CompoundEntity;
 import org.alexander.database.CompoundKey;
 import org.alexander.database.Entity;
 import org.alexander.database.tables.food.Food;
 import org.alexander.database.tables.foodtype.FoodType;
 
-public class FoodJunctionType extends Entity<CompoundKey<String, String>> {
+public class FoodJunctionType extends CompoundEntity<String,String> {
     private String name;
     private String type;
 
-    public FoodJunctionType(Food food, FoodType foodType) {
-        super(new CompoundKey<>(food.getName(), foodType.getName()));
-        name = food.getName();
-        type = foodType.getName();
-    }
-
     public FoodJunctionType(String name, String type) {
-        super(new CompoundKey<>(name, type));
+        super(name, type);
         this.name = name;
         this.type = type;
+    }
+
+    public FoodJunctionType(Food food, FoodType foodType) {
+        this(food.getName(), foodType.getName());
     }
 
     public String getName() {
@@ -30,15 +29,12 @@ public class FoodJunctionType extends Entity<CompoundKey<String, String>> {
 
     public void setName(String name) {
         this.name = name;
-        updateKey();
+        updateKey(this.name, type);
     }
 
     public void setType(String type) {
         this.type = type;
-        updateKey();
+        updateKey(name, this.type);
     }
 
-    private void updateKey() {
-        setKey(new CompoundKey<>(name, type));
-    }
 }

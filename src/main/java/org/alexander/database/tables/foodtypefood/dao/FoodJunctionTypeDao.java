@@ -4,7 +4,7 @@ import org.alexander.database.DatabaseManager;
 import org.alexander.database.QueryHelper;
 import org.alexander.database.tables.TableDao;
 import org.alexander.database.tables.food.Food;
-import org.alexander.database.tables.food.FoodDao;
+import org.alexander.database.tables.food.dao.FoodDao;
 import org.alexander.database.tables.foodtype.FoodType;
 import org.alexander.database.tables.foodtype.dao.FoodTypeDao;
 import org.alexander.database.tables.foodtypefood.FoodJunctionType;
@@ -15,12 +15,22 @@ import java.util.List;
 
 public class FoodJunctionTypeDao implements FoodJunctionTypeDaoInterface, TableDao {
     @Override
-    public boolean contains(String entity, String attribute) {
-        validateAttribute(attribute);
-        if (!attribute.equals("name")) {
-            throw new IllegalArgumentException("Can only check existence by 'name' attribute.");
+    public boolean contains(String name, String type) {
+        if (name == null || type == null) {
+            CentralLogger.getInstance().logWarning("FoodJunctionTypeDao.contains: name or type is null");
+            return false;
         }
-        return QueryHelper.entityExists(entity, attribute, "FOOD_TYPE_JUNCTION_FOOD");
+        String query = "SELECT 1 FROM FOOD_TYPE_JUNCTION_FOOD WHERE name = ? AND type = ? LIMIT 1";
+        try (var conn = DatabaseManager.connect();
+             PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, type);
+            ResultSet rs = preparedStatement.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            CentralLogger.getInstance().logError(e);
+        }
+        return false;
     }
 
     @Override
@@ -32,6 +42,10 @@ public class FoodJunctionTypeDao implements FoodJunctionTypeDaoInterface, TableD
 
     @Override
     public FoodJunctionType addFoodTypeFood(Food food, FoodType type) {
+        if (contains(food.getName(), type.getName())) {
+            CentralLogger.getInstance().logWarning("Junction already exists. Cannot add duplicate.");
+            return null;
+        }
         checkInputsExist(food, type);
         String query = "INSERT INTO FOOD_TYPE_JUNCTION_FOOD (name, type) VALUES (?, ?)";
         try (
@@ -67,7 +81,7 @@ public class FoodJunctionTypeDao implements FoodJunctionTypeDaoInterface, TableD
 
     @Override
     public boolean deleteFoodTypeFood(String name, String type) {
-        if (!contains(name, "name")) {
+        if (!contains(name, type)) {
             CentralLogger.getInstance().logWarning("FoodType does not exist. Cannot delete junction.");
             return false;
         }

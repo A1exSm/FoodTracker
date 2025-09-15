@@ -1,4 +1,6 @@
-package org.alexander.database.tables.food;
+package org.alexander.database.tables.food.dao;
+
+import org.alexander.database.tables.food.Food;
 
 import java.util.List;
 

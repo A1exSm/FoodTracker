@@ -50,6 +50,7 @@ class TableConstructor {
     }
     // Tables seperated into their own methods for readability and maintainability
     private String createWeekTable(){
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS WEEK (
                 week_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -59,6 +60,7 @@ class TableConstructor {
             """;
     }
     private String createDayTable() {
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS DAY (
                 date DATE PRIMARY KEY UNIQUE,
@@ -69,6 +71,7 @@ class TableConstructor {
             """;
     }
     private String createMealTable() {
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS MEAL (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -80,6 +83,7 @@ class TableConstructor {
             """;
     }
     private String createSnackTable() {
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS SNACK (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -90,6 +94,7 @@ class TableConstructor {
             """;
     }
     private String createFoodTable() {
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS FOOD (
                 name VARCHAR(250) PRIMARY KEY NOT NULL UNIQUE,
@@ -99,6 +104,7 @@ class TableConstructor {
             """;
     }
     private String createFoodTypeTable() {
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS FOOD_TYPE (
                 name VARCHAR(12) PRIMARY KEY NOT NULL UNIQUE
@@ -106,6 +112,7 @@ class TableConstructor {
             """;
     }
     private String createFoodTypeJunctionFoodTable() {
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS FOOD_TYPE_JUNCTION_FOOD (
                 name VARCHAR(250) NOT NULL,
@@ -117,6 +124,7 @@ class TableConstructor {
             """;
     }
     private String createFoodMealTable(){
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS FOOD_MEAL (
                 name VARCHAR(250) NOT NULL,
@@ -129,6 +137,7 @@ class TableConstructor {
             """;
     }
     private String createFoodSnackTable(){
+        // language=sql
         return """
             CREATE TABLE IF NOT EXISTS FOOD_SNACK (
                 name VARCHAR(250) NOT NULL,
