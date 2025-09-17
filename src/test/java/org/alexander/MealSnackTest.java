@@ -3,6 +3,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.alexander.database.tables.day.Day;
 import org.alexander.database.tables.day.dao.DayDao;
+import org.alexander.database.tables.food.dao.FoodDao;
+import org.alexander.database.tables.foodmeal.dao.FoodMealDao;
+import org.alexander.database.tables.foodsnack.dao.FoodSnackDao;
+import org.alexander.database.tables.foodtype.dao.FoodTypeDao;
+import org.alexander.database.tables.foodtypefood.dao.FoodJunctionTypeDao;
 import org.alexander.database.tables.meal.Meal;
 import org.alexander.database.tables.meal.MealTypes;
 import org.alexander.database.tables.meal.dao.MealDao;
@@ -81,6 +86,81 @@ public class MealSnackTest {
         assertTrue(weekDao.deleteWeek(week));
         assertFalse(snackDao.contains(snack.getId()));
     }
+
+    @Test
+    void FoodSnackTest() {
+        // Day-Week setup
+        var week = initWeek();
+        var today = initDay();
+        // Snack setup
+        SnackDao snackDao = new SnackDao();
+        Snack snack = snackDao.addSnack(today, LocalTime.now());
+        assertNotNull(snack);
+        // Food Setup
+        FoodDao foodDao = new FoodDao();
+        var apple = foodDao.addFood("Apple", 150.0, 80.0);
+        assertNotNull(apple);
+        // Food and FoodType Setup
+        FoodJunctionTypeDao foodJunctionTypeDao = new FoodJunctionTypeDao();
+        FoodTypeDao foodTypeDao = new FoodTypeDao();
+        var fiber = foodTypeDao.getFoodType("Fiber");
+        var carb = foodTypeDao.getFoodType("Carbohydrate");
+        assertNotNull(fiber);
+        assertNotNull(carb);
+        assertNotNull(foodJunctionTypeDao.addFoodTypeFood(apple, fiber));
+        assertNotNull(foodJunctionTypeDao.addFoodTypeFood(apple, carb));
+        assertEquals(2, foodJunctionTypeDao.getTypes(apple).size());
+        // FoodSnack Setup
+        FoodSnackDao foodSnackDao = new FoodSnackDao();
+        var appleSnack = foodSnackDao.addFoodSnack(apple, snack, 1.0);
+        assertNotNull(appleSnack);
+        // Cleanup
+        assertTrue(foodJunctionTypeDao.deleteFoodTypeFood(apple, fiber));
+        assertTrue(foodJunctionTypeDao.deleteFoodTypeFood(apple, carb));
+        assertTrue(foodSnackDao.deleteFoodSnack(appleSnack));
+        assertTrue(foodDao.deleteFood(apple));
+        assertTrue(snackDao.deleteSnack(snack));
+        assertTrue(dayDao.deleteDay(today));
+        assertTrue(weekDao.deleteWeek(week));
+    }
+
+    @Test
+    void FoodMealTest() {
+        // Day-Week setup
+        var week = initWeek();
+        var today = initDay();
+        // Meal setup
+        MealDao mealDao = new MealDao();
+        Meal breakfast = mealDao.addMeal(today, MealTypes.BREAKFAST);
+        assertNotNull(breakfast);
+        // Food Setup
+        FoodDao foodDao = new FoodDao();
+        var banana = foodDao.addFood("Banana", 120.0, 100.0);
+        assertNotNull(banana);
+        // Food and FoodType Setup
+        FoodJunctionTypeDao foodJunctionTypeDao = new FoodJunctionTypeDao();
+        FoodTypeDao foodTypeDao = new FoodTypeDao();
+        var fiber = foodTypeDao.getFoodType("Fiber");
+        var carb = foodTypeDao.getFoodType("Carbohydrate");
+        assertNotNull(fiber);
+        assertNotNull(carb);
+        assertNotNull(foodJunctionTypeDao.addFoodTypeFood(banana, fiber));
+        assertNotNull(foodJunctionTypeDao.addFoodTypeFood(banana, carb));
+        assertEquals(2, foodJunctionTypeDao.getTypes(banana).size());
+        // FoodMeal Setup
+        FoodMealDao foodMealDao = new FoodMealDao();
+        var bananaMeal = foodMealDao.addFoodMeal(banana, breakfast, 1.0);
+        assertNotNull(bananaMeal);
+        // Cleanup
+        assertTrue(foodJunctionTypeDao.deleteFoodTypeFood(banana, fiber));
+        assertTrue(foodJunctionTypeDao.deleteFoodTypeFood(banana, carb));
+        assertTrue(foodMealDao.deleteFoodMeal(bananaMeal));
+        assertTrue(foodDao.deleteFood(banana));
+        assertTrue(mealDao.deleteMeal(breakfast));
+        assertTrue(dayDao.deleteDay(today));
+        assertTrue(weekDao.deleteWeek(week));
+    }
+
 
     public static void clearMeals(MealDao mealDao) {
         if (!mealDao.getMeals().isEmpty()) {

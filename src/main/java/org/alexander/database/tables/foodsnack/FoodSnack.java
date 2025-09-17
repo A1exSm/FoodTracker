@@ -3,6 +3,7 @@ package org.alexander.database.tables.foodsnack;
 import org.alexander.database.CompoundEntity;
 import org.alexander.database.tables.food.Food;
 import org.alexander.database.tables.snack.Snack;
+import org.jetbrains.annotations.NotNull;
 
 public class FoodSnack extends CompoundEntity<String, Integer> {
     private String foodName;
@@ -16,12 +17,16 @@ public class FoodSnack extends CompoundEntity<String, Integer> {
         this.num_servings = num_servings;
     }
 
-    public FoodSnack(Food food, Snack snack, Double num_servings) {
+    public FoodSnack(String foodName, Integer snackId) {
+        this(foodName, snackId, null);
+    }
+
+    public FoodSnack(@NotNull Food food, @NotNull Snack snack, Double num_servings) {
         this(food.getName(), snack.getId(), num_servings);
     }
 
-    public FoodSnack(Food food, Snack snack) {
-        this(food.getName(), snack.getId(), null);
+    public FoodSnack(@NotNull Food food, @NotNull Snack snack) {
+        this(food.getName(), snack.getId());
     }
 
     public String getFoodName() {
