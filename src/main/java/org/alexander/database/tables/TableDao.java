@@ -1,6 +1,7 @@
 package org.alexander.database.tables;
 
 public interface TableDao {
+    // TODO: Contains takes an entity which is an abstract class of an input to contains. Each table must have an input class that extends that abstract input class. Maybe changing the return type to some ints which map to constants like VALUE_NOT_FOUND, or type not recognised etc.
     /**
      * Checks if a value with the given name exists in the table.
      * @param entity the entity to check

@@ -8,6 +8,7 @@ public class Day extends Entity<LocalDate> {
     private LocalDate date;
     private int week_id;
     private Double bodyWeight; // can be null
+    public java.time.DayOfWeek dayOfWeek;
 
     /**
      * Constructor for Day
@@ -20,6 +21,7 @@ public class Day extends Entity<LocalDate> {
         this.date = date;
         this.week_id = week_id;
         this.bodyWeight = bodyWeight;
+        this.dayOfWeek = date.getDayOfWeek();
     }
 
     /**

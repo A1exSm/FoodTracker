@@ -8,6 +8,9 @@ public class AppFrame extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Center the window
-        setVisible(true);
+    }
+
+    public void maximize() {
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 }
