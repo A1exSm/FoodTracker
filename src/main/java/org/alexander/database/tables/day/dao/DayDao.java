@@ -148,10 +148,7 @@ public class DayDao implements DayDaoInterface, TableDao {
 
     @Override
     public Day getDay(LocalDate date) {
-        if (!contains(date.toString(), "date")) {
-            logger.logWarning("Get Day failed: Day with date '" + date + "' does not exist. Returning null.");
-            return null;
-        }
+        if (!contains(date.toString(), "date")) return null;
         String query = "SELECT date, week_id, body_weight FROM DAY WHERE date = ? LIMIT 1";
         try (
                 var conn = DatabaseManager.connect();

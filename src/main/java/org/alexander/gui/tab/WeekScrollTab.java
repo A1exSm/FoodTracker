@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -58,8 +59,30 @@ public class WeekScrollTab extends JScrollPane {
         });
     }
 
+    public Week getWeek() {
+        return week;
+    }
+
     public String getTitle() {
-        return String.format("Week of %s to %s", week.getStartDate(), week.getEndDate());
+        LocalDate start = week.getStartDate();
+        LocalDate end = week.getEndDate();
+        int startDay = start.getDayOfMonth();
+        int endDay = end.getDayOfMonth();
+        int startYear = start.getYear();
+        int endYear = end.getYear();
+        String startMonth = start.getMonth().toString().substring(0, 3);
+        String endMonth = end.getMonth().toString().substring(0, 3);
+        StringBuilder title = new StringBuilder();
+        if (!startMonth.equals(endMonth)) {
+            title.append(String.format("%s %s", startDay, startMonth));
+        } else {
+            title.append(startDay);
+        }
+        if (startYear != endYear) {
+            title.append(String.format(", %d", startYear));
+        }
+        title.append(String.format(" - %s %s %d", endDay, endMonth, endYear));
+        return title.toString();
     }
 
     private Day[] getDays() {

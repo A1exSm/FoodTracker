@@ -17,13 +17,11 @@ public class GUIHandler {
 
     private void setup() {
         appFrame.setLayout(new BorderLayout());
-        // Toolbar
-        toolBar = new ToolBar();
-        appFrame.add(toolBar, BorderLayout.NORTH);
         // JTabbedPane
         tabbedPane = new JTabbedPane();
         appFrame.add(tabbedPane, BorderLayout.CENTER);
-        new WeekManager(tabbedPane);
-
+        // Toolbar
+        toolBar = new ToolBar(new WeekManager(tabbedPane));
+        appFrame.add(toolBar, BorderLayout.NORTH);
     }
 }
