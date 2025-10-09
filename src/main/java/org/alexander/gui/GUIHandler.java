@@ -24,4 +24,15 @@ public class GUIHandler {
         toolBar = new ToolBar(new WeekManager(tabbedPane));
         appFrame.add(toolBar, BorderLayout.NORTH);
     }
+
+   public static void setCursor(JComponent component, Cursor cursor) {
+        Container parent = component;
+        while (true) {
+            parent = parent.getParent();
+            if (parent instanceof AppFrame appFrame) {
+                appFrame.setCursor(cursor);
+                return;
+            }
+        }
+    }
 }

@@ -3,6 +3,7 @@ package org.alexander.gui.tab;
 import org.alexander.database.tables.day.Day;
 import org.alexander.database.tables.day.dao.DayDao;
 import org.alexander.database.tables.week.Week;
+import org.alexander.gui.GUIHandler;
 import org.alexander.logging.CentralLogger;
 import javax.swing.*;
 import java.awt.*;
@@ -26,14 +27,44 @@ public class WeekScrollTab extends JScrollPane {
         week = tabWeek;
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(Color.black);
-        Arrays.stream(getDays()).toList().forEach(this::addDay);
-        thisFuncWillMakeTheAddDayField();
+        Arrays.stream(getDays()).toList().forEach(this::addDay);;
         setViewportView(mainPanel);
         dayPanelMap.values().forEach(this::addResizeListener);
-//        someTableStuff();
     }
 
-    private void thisFuncWillMakeTheAddDayField() {}
+    private void refresh() {
+        if (allDaysPresent()) {
+            removeAddDayPanel();
+            return;
+        }
+        setAddDayPanel();
+    }
+
+    private void setAddDayPanel() {}
+
+    private void removeAddDayPanel() {}
+
+    private boolean allDaysPresent() {
+        return dayPanelMap.size() == 7;
+    }
+
+    public void selectDay() {
+        DayOfWeek dayOfWeek = new SelectDayDialog(this).getSelectedDay();
+        if (dayOfWeek == null) return;
+        GUIHandler.setCursor(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Day day = dayDao.addDay(week.getStartDate().plusDays(dayOfWeek.getValue() - 1));
+        addDay(day);
+        addResizeListener(dayPanelMap.get(dayOfWeek));
+    }
+
+
+    public boolean[] getAvailableDays() {
+        boolean[] availableDays = new boolean[7];
+        for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+            availableDays[dayOfWeek.getValue() - 1] = !dayPanelMap.containsKey(dayOfWeek);
+        }
+        return availableDays;
+    }
 
     private void addDay(Day day) {
         if (day == null) {
@@ -45,6 +76,21 @@ public class WeekScrollTab extends JScrollPane {
         }
         dayPanelMap.put(day.dayOfWeek, new DayPanel(day));
         mainPanel.add(dayPanelMap.get(day.dayOfWeek));
+        mainPanel.revalidate();
+        mainPanel.repaint();
+        cursorDefault(day);
+    }
+
+    private void cursorDefault(Day day) {
+        new Thread(() -> {
+            JPanel panel = dayPanelMap.get(day.dayOfWeek);
+            while (panel.getParent() == null) {
+                try {
+                    Thread.sleep(100); // Avoid busy waiting
+                } catch (InterruptedException ignored) {}
+            }
+            SwingUtilities.invokeLater(() -> GUIHandler.setCursor(this, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
+        }).start();
     }
 
     private void addResizeListener(JPanel dayPanel) {

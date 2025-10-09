@@ -8,6 +8,7 @@ public class ToolBar extends JToolBar {
     private final JButton exitButton;
     private final JButton nextButton;
     private final JButton previousButton;
+    private final JButton addDay;
     private final WeekManager weekManager;
     // TODO: Make a button in the toolbar to sort the tabs by date.
     public ToolBar(WeekManager weekManager) {
@@ -16,10 +17,13 @@ public class ToolBar extends JToolBar {
         exitButton = new JButton("Exit");
         nextButton = new JButton("Next Week");
         previousButton = new JButton("Previous Week");
+        addDay = new JButton("Add Day");
         addListeners();
         add(exitButton);
         add(previousButton);
         add(nextButton);
+        add(addDay);
+//        addDay.setEnabled(false);
     }
 
     protected void addListeners() {
@@ -35,6 +39,10 @@ public class ToolBar extends JToolBar {
 
         nextButton.addActionListener(e -> {
             weekManager.openNextWeek();
+        });
+
+        addDay.addActionListener(e -> {
+            weekManager.getOpenTab().selectDay();
         });
     }
 }

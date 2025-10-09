@@ -1,10 +1,13 @@
 package org.alexander.gui.tab;
 
+import org.alexander.database.tables.day.Day;
 import org.alexander.database.tables.week.Week;
 import org.alexander.database.tables.week.dao.WeekDao;
+import org.alexander.gui.GUIHandler;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
+import java.awt.*;
 import java.time.LocalDate;
 import java.util.HashMap;
 
@@ -45,6 +48,7 @@ public class WeekManager {
     }
 
     private Week getTabbedPaneWeek() {
+        GUIHandler.setCursor(tabbedPane, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         int index = tabbedPane.getSelectedIndex();
         if (index == -1) {
             logger.logWarning("WeekManager getTabbedPaneWeek() called with no selected tab.");
@@ -84,6 +88,18 @@ public class WeekManager {
         return currentWeek.getStartDate().minusWeeks(1);
     }
 
+    public WeekScrollTab getOpenTab() {
+        int index = tabbedPane.getSelectedIndex();
+        if (index == -1) {
+            logger.logWarning("WeekManager getOpenTab() called with no selected tab.");
+            throw new IllegalStateException("No tab selected");
+        }
+        if (tabbedPane.getComponentAt(index) instanceof WeekScrollTab scrollTab) {
+            return scrollTab;
+        }
+        throw new IllegalStateException("Selected tab is not a WeekScrollTab");
+    }
+
     public void openWeek(Week week) {
         Week workingWeek;
         if (weekTabMap.containsKey(week)) {
@@ -102,5 +118,18 @@ public class WeekManager {
         tabbedPane.addTab(weekScrollTab.getTitle(), weekScrollTab);
         weekTabMap.put(workingWeek, weekScrollTab);
         tabbedPane.setSelectedComponent(weekScrollTab);
+        cursorDefault(week);
+    }
+
+    private void cursorDefault(Week week) {
+        new Thread(() -> {
+            org.alexander.gui.tab.WeekScrollTab scrollTab = weekTabMap.get(week);
+            while (scrollTab.getParent() == null) {
+                try {
+                    Thread.sleep(100); // Avoid busy waiting
+                } catch (InterruptedException ignored) {}
+            }
+            SwingUtilities.invokeLater(() -> GUIHandler.setCursor(tabbedPane, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
+        }).start();
     }
 }
