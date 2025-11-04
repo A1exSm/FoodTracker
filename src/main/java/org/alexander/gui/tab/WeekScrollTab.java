@@ -4,13 +4,13 @@ import org.alexander.database.tables.day.Day;
 import org.alexander.database.tables.day.dao.DayDao;
 import org.alexander.database.tables.week.Week;
 import org.alexander.gui.GUIHandler;
+import org.alexander.gui.dialogs.SelectDayDialog;
 import org.alexander.logging.CentralLogger;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -30,22 +30,27 @@ public class WeekScrollTab extends JScrollPane {
         Arrays.stream(getDays()).toList().forEach(this::addDay);;
         setViewportView(mainPanel);
         dayPanelMap.values().forEach(this::addResizeListener);
+        new Thread(() -> { // refresh deamon
+            while (true) {
+                try {
+                    Thread.sleep(5000);
+                    SwingUtilities.invokeLater(WeekScrollTab.this::refresh);
+                } catch (InterruptedException e) {
+                    logger.logError(new RuntimeException(e));
+                }
+            }
+        }).start();
     }
 
     private void refresh() {
-        if (allDaysPresent()) {
-            removeAddDayPanel();
-            return;
+        for (Day day : dayDao.getDaysInWeek(week)) {
+            if (!dayPanelMap.containsKey(day.dayOfWeek)) {
+                addDay(day);
+                addResizeListener(dayPanelMap.get(day.dayOfWeek));
+            } else {
+                refreshDay(day.dayOfWeek);
+            }
         }
-        setAddDayPanel();
-    }
-
-    private void setAddDayPanel() {}
-
-    private void removeAddDayPanel() {}
-
-    private boolean allDaysPresent() {
-        return dayPanelMap.size() == 7;
     }
 
     public void selectDay() {
@@ -57,13 +62,23 @@ public class WeekScrollTab extends JScrollPane {
         addResizeListener(dayPanelMap.get(dayOfWeek));
     }
 
-
     public boolean[] getAvailableDays() {
         boolean[] availableDays = new boolean[7];
         for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
             availableDays[dayOfWeek.getValue() - 1] = !dayPanelMap.containsKey(dayOfWeek);
         }
         return availableDays;
+    }
+
+    public void refreshDay(DayOfWeek dayOfWeek) {
+        if (!dayPanelMap.containsKey(dayOfWeek)) {
+            logger.logWarning("WeekScrollTab refreshDay() called with non-existent day: " + dayOfWeek);
+            return;
+        }
+        DayPanel dayPanel = (DayPanel) dayPanelMap.get(dayOfWeek);
+        dayPanel.refreshTable();
+        dayPanel.revalidate();
+        dayPanel.repaint();
     }
 
     private void addDay(Day day) {

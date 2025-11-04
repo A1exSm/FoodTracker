@@ -13,14 +13,15 @@ import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
         DatabaseManager.initialise();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("AppState.saveDB = " + AppState.saveDB);
+//            if (AppState.saveDB) {
+//                DatabaseManager.save();
+//            }
+        }));
         AppFrame appFrame = new AppFrame();
         GUIHandler handler = new GUIHandler(appFrame);
         appFrame.setVisible(true);
-        wait(2000);
-        appFrame.maximize();
-        wait(3000);
-        appFrame.setSize(800,600);
-
 //        DatabaseManager.save();
     }
 

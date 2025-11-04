@@ -21,7 +21,7 @@ public class GUIHandler {
         tabbedPane = new JTabbedPane();
         appFrame.add(tabbedPane, BorderLayout.CENTER);
         // Toolbar
-        toolBar = new ToolBar(new WeekManager(tabbedPane));
+        toolBar = new ToolBar(new WeekManager(tabbedPane), appFrame);
         appFrame.add(toolBar, BorderLayout.NORTH);
     }
 

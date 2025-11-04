@@ -1,4 +1,6 @@
-package org.alexander.gui.tab;
+package org.alexander.gui.dialogs;
+
+import org.alexander.gui.tab.WeekScrollTab;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,13 +15,29 @@ public class SelectDayDialog extends JDialog {
     private DayOfWeek selectedDay;
     public SelectDayDialog(WeekScrollTab weekScrollTab) {
         super(SwingUtilities.getWindowAncestor(weekScrollTab), "Select Day");
-        setModal(true);
+        setModalityType(ModalityType.APPLICATION_MODAL);
         setMinimumSize(new Dimension(getMinimumSize().width, 90));
+        setLocationRelativeTo(SwingUtilities.getWindowAncestor(weekScrollTab));
         daysPanel.setLayout(new FlowLayout());
         daysPanel.setBackground(Color.BLACK);
         add(new Label("Select Day:"), BorderLayout.NORTH);
         add(daysPanel, BorderLayout.CENTER);
         buttonsInit(weekScrollTab);
+        componentListener();
+        pack();
+        this.setVisible(true);
+    }
+
+    public SelectDayDialog(Window owner) {
+        super(owner, "Select Day");
+        setModalityType(ModalityType.APPLICATION_MODAL);
+        setMinimumSize(new Dimension(getMinimumSize().width, 90));
+        setLocationRelativeTo(owner);
+        daysPanel.setLayout(new FlowLayout());
+        daysPanel.setBackground(Color.BLACK);
+        add(new Label("Select Day:"), BorderLayout.NORTH);
+        add(daysPanel, BorderLayout.CENTER);
+        buttonsInit2();
         componentListener();
         pack();
         this.setVisible(true);
@@ -41,6 +59,19 @@ public class SelectDayDialog extends JDialog {
 
     public DayOfWeek getSelectedDay() {
         return selectedDay;
+    }
+
+
+    private void buttonsInit2() {
+        for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+            JButton dayButton = new JButton(dayOfWeek.name());
+            dayButtons.put(dayOfWeek, dayButton);
+            dayButton.addActionListener(e -> {
+                this.selectedDay = dayOfWeek;
+                this.dispose();
+            });
+            daysPanel.add(dayButton);
+        }
     }
 
     private void buttonsInit(WeekScrollTab weekScrollTab) {
