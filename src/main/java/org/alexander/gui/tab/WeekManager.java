@@ -8,6 +8,7 @@ import org.alexander.gui.GUIHandler;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashMap;
 
@@ -131,5 +132,17 @@ public class WeekManager {
             }
             SwingUtilities.invokeLater(() -> GUIHandler.setCursor(tabbedPane, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
         }).start();
+    }
+
+    /**
+     * Refreshes all day panels in all open week tabs.
+     * This is useful after global operations like deleting a food item.
+     */
+    public void refreshAllDayPanels() {
+        for (WeekScrollTab weekScrollTab : weekTabMap.values()) {
+            for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+                weekScrollTab.refreshDay(dayOfWeek);
+            }
+        }
     }
 }

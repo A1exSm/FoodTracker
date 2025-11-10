@@ -1,6 +1,6 @@
 package org.alexander.gui;
 
-import org.alexander.gui.dialogs.FoodDialog;
+import org.alexander.gui.dialogs.SelectFoodDialog;
 import org.alexander.gui.tab.WeekManager;
 
 import javax.swing.*;
@@ -10,7 +10,7 @@ public class ToolBar extends JToolBar {
     private final JButton nextButton;
     private final JButton previousButton;
     private final JButton addDay;
-    private final JButton addFood;
+    private final JButton selectFood;
     private final WeekManager weekManager;
     private final AppFrame appFrame;
 
@@ -27,13 +27,13 @@ public class ToolBar extends JToolBar {
         nextButton = new JButton("Next Week");
         previousButton = new JButton("Previous Week");
         addDay = new JButton("Add Day");
-        addFood = new JButton("Add New Food");
+        selectFood = new JButton("Select Food");
         addListeners();
         add(exitButton);
         add(previousButton);
         add(nextButton);
         add(addDay);
-        add(addFood);
+        add(selectFood);
     }
 
     /**
@@ -44,6 +44,6 @@ public class ToolBar extends JToolBar {
         previousButton.addActionListener(e -> weekManager.openPreviousWeek());
         nextButton.addActionListener(e -> weekManager.openNextWeek());
         addDay.addActionListener(e -> weekManager.getOpenTab().selectDay());
-        addFood.addActionListener(e -> new FoodDialog(SwingUtilities.getWindowAncestor(appFrame)));
+        selectFood.addActionListener(e -> new SelectFoodDialog(SwingUtilities.getWindowAncestor(appFrame)));
     }
 }
