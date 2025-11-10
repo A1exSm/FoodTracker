@@ -349,7 +349,7 @@ class DayPanel extends JPanel {
             } else if (mealOrSnackObject instanceof Snack snack) {
                 new EditMealSnackDialog(SwingUtilities.getWindowAncestor(this), snack, week, weekScrollTab);
             }
-            refreshTable();
+            // Note: refreshTable() is not needed here as EditMealSnackDialog handles its own refresh
         }
     }
 

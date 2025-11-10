@@ -51,6 +51,7 @@ public class FoodDetailsDialog extends JDialog {
         // Initialize text fields with current values
         nameField = new JTextField(food.getName());
         nameField.setEditable(false); // Food name cannot be changed (it's the primary key)
+        nameField.setToolTipText("Food name cannot be changed (it's the primary key)");
         servingGramsField = new JTextField(
                 food.getServingGrams() != null ? String.valueOf(food.getServingGrams()) : "");
         servingCaloriesField = new JTextField(
