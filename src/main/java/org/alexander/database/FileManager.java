@@ -20,7 +20,8 @@ import java.util.Comparator;
  */
 public class FileManager {
     private static final String FOLDER_NAME = "FoodTracker";
-    private static final String FILE_NAME = "data.sqlite";
+    private static final String SAVED_FILE_NAME = "data.sqlite";
+    private static final String WORKING_FILE_NAME = "database.sqlite";
     private static boolean initialised = false;
     private static final CentralLogger logger = CentralLogger.getInstance();
     private final int BACKUP_RETENTION = 10;
@@ -34,7 +35,7 @@ public class FileManager {
             System.out.println("Debug: New file created, initializing fresh data...");
             DatabaseManager.createFreshData();
         } else {
-            copyToLiveDatabase();
+            copyToWorkingDatabase();
         }
         initialised = true;
     }
@@ -76,29 +77,29 @@ public class FileManager {
     }
 
     /**
-     * Checks if the file exists, if not creates it. If a backup file exists, it copies it to the main file.
+     * Checks if the saved file exists, if not creates it. If a backup file exists, it copies it to the saved file.
      * @return returns true if the file is new, and false if it already existed.
      */
     private boolean fileHandler(String userHome, boolean isFolderNew) {
-        Path filePath = Paths.get(userHome, FOLDER_NAME, FILE_NAME);
-        File file = filePath.toFile();
-        if (!file.exists()) {
+        Path savedFilePath = Paths.get(userHome, FOLDER_NAME, SAVED_FILE_NAME);
+        File savedFile = savedFilePath.toFile();
+        if (!savedFile.exists()) {
             // creates a new file if one does not exist
-            logger.logInfo("[Debug] File does not exist, creating...");
+            logger.logInfo("[Debug] Saved file does not exist, creating...");
             try {
-                if (!file.createNewFile()) {
-                    throw new RuntimeException("Error creating file");
+                if (!savedFile.createNewFile()) {
+                    throw new RuntimeException("Error creating saved file");
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
             if (!isFolderNew) {
-                logger.logWarning("[Debug] File does not exist, attempting to find backup...");
+                logger.logWarning("[Debug] Saved file does not exist, attempting to find backup...");
                 File[] backupFiles = listBackupFiles(userHome);
                 if (backupFiles != null) {
                     File latestBackup = backupFiles[0];
                     try {
-                        Files.copy(latestBackup.toPath(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(latestBackup.toPath(), savedFilePath, StandardCopyOption.REPLACE_EXISTING);
                         logger.logInfo("[Debug]: Most recent Backup file restored successfully: " + latestBackup.getName());
                         return false; // Returns false since the file data is not new but restored from backup
                     } catch (IOException e) {
@@ -128,42 +129,44 @@ public class FileManager {
 
     }
 
-    private void copyToLiveDatabase() {
+    /**
+     * Copies the saved database to the working database at startup.
+     */
+    private void copyToWorkingDatabase() {
         String userHome = System.getProperty("user.home");
-        Path sourcePath = Paths.get(userHome, FOLDER_NAME, FILE_NAME);
-        Path destinationPath = Paths.get("src/main/resources/data/data.sqlite");
-        File destinationFile = destinationPath.toFile();
-        deleteLiveDataBase(destinationFile);
-        try {
-            if (!destinationFile.createNewFile()) {
-                throw new RuntimeException("Error creating live database file, file " + destinationFile.getAbsolutePath() + " already exists.");
+        Path savedPath = Paths.get(userHome, FOLDER_NAME, SAVED_FILE_NAME);
+        Path workingPath = Paths.get(userHome, FOLDER_NAME, WORKING_FILE_NAME);
+        File workingFile = workingPath.toFile();
+        
+        // Delete existing working database if it exists
+        if (workingFile.exists()) {
+            if (workingFile.delete()) {
+                logger.logInfo("[Debug] Previous working database deleted successfully.");
+            } else {
+                logger.logError("Error deleting old working database.");
             }
-            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-            logger.logInfo("[Debug] Data copied to live database successfully.");
-            if (destinationPath.toFile().length() == 0) {
-                System.out.println("Debug: Warning - Live database file is empty after copy.");
+        }
+        
+        try {
+            if (!workingFile.createNewFile()) {
+                throw new RuntimeException("Error creating working database file, file " + workingFile.getAbsolutePath() + " already exists.");
+            }
+            Files.copy(savedPath, workingPath, StandardCopyOption.REPLACE_EXISTING);
+            logger.logInfo("[Debug] Data copied to working database successfully.");
+            if (workingPath.toFile().length() == 0) {
+                System.out.println("Debug: Warning - Working database file is empty after copy.");
                 DatabaseManager.createFreshData();
             }
         } catch (IOException e) {
-            System.err.println("Error copying to live database: " + e.getMessage());
+            System.err.println("Error copying to working database: " + e.getMessage());
         }
-
     }
 
-    private void deleteLiveDataBase(File destinationFile) {
-        if (destinationFile.exists()) {
-            if (destinationFile.delete()) {
-                logger.logInfo("[Debug] Previous local database deleted successfully.");
-            } else {
-                logger.logError("Error deleting old live database.");
-            }
-        }
 
-    }
 
     /**
-     * Saves the current live database to the user's directory.
-     * Overwrites any existing file.
+     * Saves the current working database to the saved database file.
+     * Creates a backup of the saved database before overwriting.
      */
     public void save() {
         if (!initialised) {
@@ -171,15 +174,17 @@ public class FileManager {
             return;
         }
         String userHome = System.getProperty("user.home");
-        Path sourcePath = Paths.get("src/main/resources/data/data.sqlite");
-        Path backupPath =  createBackup(userHome);
-        Path destinationPath = Paths.get(userHome, FOLDER_NAME, FILE_NAME);
+        Path workingPath = Paths.get(userHome, FOLDER_NAME, WORKING_FILE_NAME);
+        Path savedPath = Paths.get(userHome, FOLDER_NAME, SAVED_FILE_NAME);
+        Path backupPath = createBackup(userHome);
         try {
-            Files.copy(destinationPath, backupPath, StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Debug: Live database saved to user directory successfully.");
+            // First backup the current saved database
+            Files.copy(savedPath, backupPath, StandardCopyOption.REPLACE_EXISTING);
+            // Then copy the working database to the saved database
+            Files.copy(workingPath, savedPath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Debug: Working database saved successfully.");
         } catch (IOException e) {
-            System.err.println("Error saving live database: " + e.getMessage());
+            System.err.println("Error saving working database: " + e.getMessage());
         }
     }
 

@@ -34,11 +34,11 @@ public class AppFrame extends JFrame {
         // Ensure the database connection is closed to release the file lock
         DatabaseManager.closeConnection();
 
-        Path liveDbPath = Paths.get("src/main/resources/data/data.sqlite");
-        Path userDbPath = Paths.get(System.getProperty("user.home"), "FoodTracker", "data.sqlite");
+        Path workingDbPath = Paths.get(System.getProperty("user.home"), "FoodTracker", "database.sqlite");
+        Path savedDbPath = Paths.get(System.getProperty("user.home"), "FoodTracker", "data.sqlite");
 
         try {
-            DatabaseComparer comparer = new DatabaseComparer(liveDbPath, userDbPath);
+            DatabaseComparer comparer = new DatabaseComparer(workingDbPath, savedDbPath);
             comparer.compare();
             if (comparer.hasChanges()) {
                 ChangesSummaryDialog summaryDialog = new ChangesSummaryDialog(this, comparer.getAdditions(), comparer.getDeletions());
