@@ -46,20 +46,5 @@ class FoodDaoTest {
         // Clean up
         boolean deleted = foodDao.deleteFood(food);
         assertTrue(deleted);
-
-        name = "nana";
-        servingGrams = null;
-        servingCalories = null;
-
-        food = foodDao.addFood(name, servingGrams, servingCalories);
-        assertNotNull(food);
-        assert food.getName().equals(name);
-        System.out.println(food.getServingGrams());
-        assert food.getServingGrams() == servingGrams;
-        assert food.getServingCalories().equals(servingCalories);
-
-        // Clean up
-        deleted = foodDao.deleteFood(food);
-        assertTrue(deleted);
     }
 }

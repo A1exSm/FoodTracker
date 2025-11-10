@@ -34,6 +34,16 @@ public class MealDao implements MealDaoInterface, TableDao, DatabaseComparer.Rea
         return QueryHelper.entityExists(Integer.parseInt(entity), "id", "MEAL");
     }
 
+    /**
+     * Checks if a meal exists in the database by its ID.
+     * @param meal The meal to check
+     * @return true if the meal exists, false otherwise
+     */
+    public boolean contains(Meal meal) {
+        if (meal == null) return false;
+        return contains(String.valueOf(meal.getId()), "id");
+    }
+
     public boolean contains(LocalDate date, LocalTime time, MealTypes type) {
         String query = "SELECT 1 FROM MEAL WHERE date = ? AND time = ? AND type = ? LIMIT 1";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(query)) {

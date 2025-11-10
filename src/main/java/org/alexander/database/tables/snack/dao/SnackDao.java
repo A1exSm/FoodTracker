@@ -32,6 +32,16 @@ public class SnackDao implements SnackDaoInterface, TableDao, DatabaseComparer.R
         return contains(Integer.parseInt(entity));
     }
 
+    /**
+     * Checks if a snack exists in the database by its ID.
+     * @param snack The snack to check
+     * @return true if the snack exists, false otherwise
+     */
+    public boolean contains(Snack snack) {
+        if (snack == null || snack.getId() == null) return false;
+        return contains(String.valueOf(snack.getId()), "id");
+    }
+
     public boolean contains(Integer id) {
         if (id == null) return false;
         return QueryHelper.entityExists(id, "id", "SNACK");
