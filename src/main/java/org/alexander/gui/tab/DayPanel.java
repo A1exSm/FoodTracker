@@ -16,6 +16,8 @@ import org.alexander.gui.dialogs.EditFoodDialog;
 import org.alexander.gui.dialogs.FoodDialog;
 import org.alexander.gui.dialogs.MealDialog;
 import org.alexander.gui.dialogs.SnackDialog;
+import org.alexander.gui.dialogs.ViewMealSnackDialog;
+import org.alexander.gui.dialogs.EditMealSnackDialog;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -159,6 +161,14 @@ class DayPanel extends JPanel {
             Object mealOrSnackObject = mealAndSnackObjects.get(col);
 
             if (row == 0) { // Clicked on a Meal/Snack row
+                JMenuItem viewDetailsItem = new JMenuItem("View Details");
+                viewDetailsItem.addActionListener(ae -> viewMealSnackDetails(mealOrSnackObject));
+                popupMenu.add(viewDetailsItem);
+
+                JMenuItem editItem = new JMenuItem("Edit Meal/Snack");
+                editItem.addActionListener(ae -> editMealSnack(mealOrSnackObject));
+                popupMenu.add(editItem);
+
                 JMenuItem deleteMealSnackItem = new JMenuItem("Delete Meal/Snack");
                 deleteMealSnackItem.addActionListener(ae -> deleteMealOrSnack(mealOrSnackObject));
                 popupMenu.add(deleteMealSnackItem);
@@ -303,6 +313,44 @@ class DayPanel extends JPanel {
             }
         }
         return 1.0; // Default to 1.0 if not found
+    }
+
+    /**
+     * Opens a dialog to view meal or snack details.
+     * @param mealOrSnackObject The meal or snack to view.
+     */
+    private void viewMealSnackDetails(Object mealOrSnackObject) {
+        if (mealOrSnackObject instanceof Meal meal) {
+            new ViewMealSnackDialog(SwingUtilities.getWindowAncestor(this), meal);
+        } else if (mealOrSnackObject instanceof Snack snack) {
+            new ViewMealSnackDialog(SwingUtilities.getWindowAncestor(this), snack);
+        }
+    }
+
+    /**
+     * Opens a dialog to edit meal or snack properties.
+     * @param mealOrSnackObject The meal or snack to edit.
+     */
+    private void editMealSnack(Object mealOrSnackObject) {
+        // Find the WeekScrollTab parent
+        Container parent = this.getParent();
+        WeekScrollTab weekScrollTab = null;
+        while (parent != null) {
+            if (parent instanceof WeekScrollTab) {
+                weekScrollTab = (WeekScrollTab) parent;
+                break;
+            }
+            parent = parent.getParent();
+        }
+
+        if (weekScrollTab != null) {
+            if (mealOrSnackObject instanceof Meal meal) {
+                new EditMealSnackDialog(SwingUtilities.getWindowAncestor(this), meal, week, weekScrollTab);
+            } else if (mealOrSnackObject instanceof Snack snack) {
+                new EditMealSnackDialog(SwingUtilities.getWindowAncestor(this), snack, week, weekScrollTab);
+            }
+            // Note: refreshTable() is not needed here as EditMealSnackDialog handles its own refresh
+        }
     }
 
     /**
