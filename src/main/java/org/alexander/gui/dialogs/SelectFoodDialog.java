@@ -53,6 +53,8 @@ public class SelectFoodDialog extends JDialog {
         });
         
         setupUI(owner);
+        pack();
+        setVisible(true);
     }
 
     /**

@@ -40,27 +40,21 @@ public class AppFrame extends JFrame {
         try {
             DatabaseComparer comparer = new DatabaseComparer(workingDbPath, savedDbPath);
             comparer.compare();
-            if (comparer.hasChanges()) {
-                ChangesSummaryDialog summaryDialog = new ChangesSummaryDialog(this, comparer.getAdditions(), comparer.getDeletions());
-                int result = summaryDialog.showDialog();
 
-                if (result == JOptionPane.YES_OPTION) {
-                    AppState.saveDB = true;
-                    dispose();
-                    System.exit(0);
-                } else if (result == JOptionPane.NO_OPTION) {
-                    AppState.saveDB = false;
-                    dispose();
-                    System.exit(0);
-                }
-                // If CANCEL_OPTION, do nothing and keep the app open.
+            ChangesSummaryDialog summaryDialog = new ChangesSummaryDialog(this, comparer.getAdditions(), comparer.getDeletions());
+            int result = summaryDialog.showDialog();
 
-            } else {
-                // No changes detected, no need to save.
+            if (result == JOptionPane.YES_OPTION) {
+                AppState.saveDB = true;
+                dispose();
+                System.exit(0);
+            } else if (result == JOptionPane.NO_OPTION) {
                 AppState.saveDB = false;
                 dispose();
                 System.exit(0);
             }
+                // If CANCEL_OPTION, do nothing and keep the app open.
+
         } catch (Exception ex) {
             CentralLogger.getInstance().logError("Failed to compare databases on exit: " + ex.getMessage());
             // Fallback to the original simple dialog on error
