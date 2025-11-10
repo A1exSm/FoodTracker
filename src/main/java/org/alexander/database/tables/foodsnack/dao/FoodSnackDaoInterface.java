@@ -20,6 +20,8 @@ public interface FoodSnackDaoInterface {
     FoodSnack getFoodSnack(String foodName, Integer snackId);
     FoodSnack getFoodSnack(Food food, Snack snack);
     FoodSnack getFoodSnack(FoodSnack foodSnack);
+    // Update
+    FoodSnack updateFoodSnack(String foodName, Integer snackId, Double num_servings);
     // List
     List<FoodSnack> getFoodSnackList();
 }

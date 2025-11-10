@@ -83,7 +83,7 @@ public class FoodSnackDao implements FoodSnackDaoInterface, TableDaoTwo {
 
     @Override
     public FoodSnack addFoodSnack(String foodName, Integer snackId) {
-        return addFoodSnack(foodName, snackId, null);
+        return addFoodSnack(foodName, snackId, 1.0); // Default to 1 serving
     }
 
     @Override
@@ -150,6 +150,29 @@ public class FoodSnackDao implements FoodSnackDaoInterface, TableDaoTwo {
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 Double num_servings = resultSet.getObject("num_servings", Double.class);
+                return new FoodSnack(foodName, snackId, num_servings);
+            }
+        } catch (SQLException e) {
+            logger.logError(e);
+        }
+        return null;
+    }
+
+    @Override
+    public FoodSnack updateFoodSnack(String foodName, Integer snackId, Double num_servings) {
+        if (!contains(foodName, snackId)) {
+            logger.logWarning("Junction does not exist. Cannot update non-existent junction.");
+            return null;
+        }
+        String query = "UPDATE FOOD_SNACK SET num_servings = ? WHERE name = ? AND snack_id = ?";
+        try (
+                var conn = DatabaseManager.connect();
+                var preparedStatement = conn.prepareStatement(query)
+        ) {
+            QueryHelper.checkNull(preparedStatement, 1, num_servings);
+            preparedStatement.setString(2, foodName);
+            preparedStatement.setInt(3, snackId);
+            if (preparedStatement.executeUpdate() > 0) {
                 return new FoodSnack(foodName, snackId, num_servings);
             }
         } catch (SQLException e) {

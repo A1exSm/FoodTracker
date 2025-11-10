@@ -1,9 +1,14 @@
 package org.alexander.gui;
 
 import org.alexander.AppState;
+import org.alexander.database.DatabaseComparer;
+import org.alexander.gui.dialogs.ChangesSummaryDialog;
+import org.alexander.logging.CentralLogger;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class AppFrame extends JFrame {
     public AppFrame() {
@@ -19,17 +24,54 @@ public class AppFrame extends JFrame {
         });
     }
 
+    /**
+     * Handles the application closing sequence. It compares the live and saved databases,
+     * shows a summary of changes if any exist, and prompts the user to save, discard, or cancel.
+     */
     public void closeOperation() {
-        int confirmed = JOptionPane.showConfirmDialog(
-                null,
-                "Save before exit?",
-                "Confirm Exit",
-                JOptionPane.YES_NO_OPTION
-        );
-        AppState.saveDB = (confirmed == JOptionPane.YES_OPTION);
-        System.out.println(AppState.saveDB);
-        dispose();
-        System.exit(0);
+        Path liveDbPath = Paths.get("src/main/resources/data/data.sqlite");
+        Path userDbPath = Paths.get(System.getProperty("user.home"), "FoodTracker", "data.sqlite");
+
+        try {
+            DatabaseComparer comparer = new DatabaseComparer(liveDbPath, userDbPath);
+            comparer.compare();
+
+            if (comparer.hasChanges()) {
+                ChangesSummaryDialog summaryDialog = new ChangesSummaryDialog(this, comparer.getAdditions(), comparer.getDeletions());
+                int result = summaryDialog.showDialog();
+
+                if (result == JOptionPane.YES_OPTION) {
+                    AppState.saveDB = true;
+                    dispose();
+                    System.exit(0);
+                } else if (result == JOptionPane.NO_OPTION) {
+                    AppState.saveDB = false;
+                    dispose();
+                    System.exit(0);
+                }
+                // If CANCEL_OPTION, do nothing and keep the app open.
+
+            } else {
+                // No changes detected, no need to save.
+                AppState.saveDB = false;
+                dispose();
+                System.exit(0);
+            }
+        } catch (Exception ex) {
+            CentralLogger.getInstance().logError("Failed to compare databases on exit: " + ex.getMessage());
+            // Fallback to the original simple dialog on error
+            int confirmed = JOptionPane.showConfirmDialog(
+                    this,
+                    "Could not determine changes. Save before exit?",
+                    "Confirm Exit",
+                    JOptionPane.YES_NO_CANCEL_OPTION
+            );
+            if (confirmed != JOptionPane.CANCEL_OPTION) {
+                AppState.saveDB = (confirmed == JOptionPane.YES_OPTION);
+                dispose();
+                System.exit(0);
+            }
+        }
     }
 
     public void maximize() {

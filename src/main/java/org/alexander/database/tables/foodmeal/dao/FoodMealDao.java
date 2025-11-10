@@ -1,5 +1,6 @@
 package org.alexander.database.tables.foodmeal.dao;
 
+import org.alexander.database.QueryHelper;
 import org.alexander.database.tables.TableDaoTwo;
 import org.alexander.database.tables.food.Food;
 import org.alexander.database.tables.food.dao.FoodDao;
@@ -79,7 +80,7 @@ public class FoodMealDao implements FoodMealDaoInterface, TableDaoTwo {
 
     @Override
     public FoodMeal addFoodMeal(String foodName, int mealId) {
-        return addFoodMeal(foodName, mealId, null);
+        return addFoodMeal(foodName, mealId, 1.0); // Default to 1 serving
     }
 
     @Override
@@ -152,6 +153,29 @@ public class FoodMealDao implements FoodMealDaoInterface, TableDaoTwo {
     @Override
     public FoodMeal getFoodMeal(FoodMeal foodMeal) {
         return getFoodMeal(foodMeal.getFoodName(), foodMeal.getMealId());
+    }
+
+    @Override
+    public FoodMeal updateFoodMeal(String foodName, int mealId, Double num_servings) {
+        if (!contains(foodName, mealId)) {
+            logger.logWarning("Junction does not exist. Cannot update non-existent junction.");
+            return null;
+        }
+        String query = "UPDATE FOOD_MEAL SET num_servings = ? WHERE name = ? AND meal_id = ?";
+        try (
+                var conn = org.alexander.database.DatabaseManager.connect();
+                var preparedStatement = conn.prepareStatement(query)
+        ) {
+            QueryHelper.checkNull(preparedStatement, 1, num_servings);
+            preparedStatement.setString(2, foodName);
+            preparedStatement.setInt(3, mealId);
+            if (preparedStatement.executeUpdate() > 0) {
+                return new FoodMeal(foodName, mealId, num_servings);
+            }
+        } catch (SQLException e) {
+            logger.logError(e);
+        }
+        return null;
     }
 
     @Override

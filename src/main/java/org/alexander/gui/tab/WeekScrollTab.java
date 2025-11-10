@@ -18,7 +18,6 @@ public class WeekScrollTab extends JScrollPane {
     private final DayDao dayDao = new DayDao();
     private final Week week;
     private final JPanel mainPanel = new JPanel();
-    private final JPanel addDayPanel = new JPanel();
     private final HashMap<DayOfWeek, JPanel> dayPanelMap = new HashMap<>();
     private static final CentralLogger logger = CentralLogger.getInstance();
 
@@ -57,7 +56,7 @@ public class WeekScrollTab extends JScrollPane {
         DayOfWeek dayOfWeek = new SelectDayDialog(this).getSelectedDay();
         if (dayOfWeek == null) return;
         GUIHandler.setCursor(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Day day = dayDao.addDay(week.getStartDate().plusDays(dayOfWeek.getValue() - 1));
+        Day day = dayDao.addDay(week.getStartDate().plusDays(dayOfWeek.getValue() - 1), week.getId());
         addDay(day);
         addResizeListener(dayPanelMap.get(dayOfWeek));
     }
@@ -89,7 +88,8 @@ public class WeekScrollTab extends JScrollPane {
             logger.logWarning("WeekScrollTab addDay() called with duplicate day: " + day.dayOfWeek);
             return;
         }
-        dayPanelMap.put(day.dayOfWeek, new DayPanel(day));
+        // Pass the week object to the DayPanel constructor
+        dayPanelMap.put(day.dayOfWeek, new DayPanel(day, week));
         mainPanel.add(dayPanelMap.get(day.dayOfWeek));
         mainPanel.revalidate();
         mainPanel.repaint();

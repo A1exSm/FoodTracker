@@ -20,9 +20,17 @@ public class FoodDialog extends JDialog {
     private final JButton addFoodButton = new JButton("Add Food");
     private final JLabel addFoodNotification = new JLabel("");
     private final JLabel selectFoodType = new JLabel("Select Food Type:");
-    private ArrayList<Checkbox> foodCheckboxes = new ArrayList<>();
-    private ArrayList<FoodType> foodTypes = new ArrayList<>();
+    private final ArrayList<Checkbox> foodCheckboxes = new ArrayList<>();
+    private final ArrayList<FoodType> foodTypes = new ArrayList<>();
     private final FoodDao foodDao = new FoodDao();
+    private Food newFood = null; // To store the newly created food
+
+    /**
+     * Constructs a modal dialog for creating a new food item.
+     * The dialog will block interaction with the owner window until it is closed.
+     *
+     * @param owner The Window from which the dialog is displayed.
+     */
     public FoodDialog(Window owner) {
         super(owner, "New Food");
         setModalityType(ModalityType.APPLICATION_MODAL);
@@ -54,7 +62,16 @@ public class FoodDialog extends JDialog {
         contentPanel.add(addFoodNotification);
         addListeners();
         pack();
-        setVisible(true);
+        setVisible(true); // This will block until the dialog is disposed
+    }
+
+    /**
+     * Returns the food item that was created in the dialog.
+     *
+     * @return The created {@link Food} object, or null if no food was created or the dialog was cancelled.
+     */
+    public Food getNewFood() {
+        return newFood;
     }
 
     private ArrayList<FoodType> getSelectedFoodTypes() {
@@ -122,12 +139,19 @@ public class FoodDialog extends JDialog {
             }
             Double calories = newFoodCalories.getText().equals("0") ? null : Double.parseDouble(newFoodCalories.getText());
             Double servingGrams = newFoodServing.getText().equals("00.00") ? null : Double.parseDouble(newFoodServing.getText());
-            Food food = foodDao.addFood(new Food(name, servingGrams, calories));
-            FoodJunctionTypeDao foodJunctionTypeDao = new FoodJunctionTypeDao();
-            for (FoodType type : getSelectedFoodTypes()) {
-                foodJunctionTypeDao.addFoodTypeFood(food, type);
+
+            this.newFood = foodDao.addFood(name, servingGrams, calories); // Store the created food
+
+            if (this.newFood != null) {
+                FoodJunctionTypeDao foodJunctionTypeDao = new FoodJunctionTypeDao();
+                for (FoodType type : getSelectedFoodTypes()) {
+                    foodJunctionTypeDao.addFoodTypeFood(this.newFood, type);
+                }
+                this.dispose(); // Close the dialog
+            } else {
+                addFoodNotification.setForeground(Color.RED);
+                addFoodNotification.setText("Error creating food in database.");
             }
-            this.dispose();
         });
     }
 }
