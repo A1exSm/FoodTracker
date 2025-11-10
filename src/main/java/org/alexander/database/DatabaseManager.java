@@ -1,5 +1,6 @@
 package org.alexander.database;
 
+import java.nio.file.Paths;
 import java.sql.*;
 
 /**
@@ -7,7 +8,8 @@ import java.sql.*;
  * @since 1.0.0
  */
 public class DatabaseManager {
-    private static final String URL = "jdbc:sqlite:src/main/resources/data/data.sqlite";
+    private static final String DATABASE_PATH = Paths.get(System.getProperty("user.home"), "FoodTracker", "database.sqlite").toString();
+    private static final String URL = "jdbc:sqlite:" + DATABASE_PATH;
     private static final FileManager fileManager = new FileManager();
     private static final TableConstructor tableConstructor = new TableConstructor();
     private static final DataConstructor dataConstructor = new DataConstructor();
