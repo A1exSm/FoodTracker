@@ -25,7 +25,7 @@ public class WeekScrollTab extends JScrollPane {
         super();
         week = tabWeek;
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(Color.black);
+        mainPanel.setBackground(new Color(230, 230, 230)); // Set a light gray background to host the panels
         Arrays.stream(getDays()).toList().forEach(this::addDay);;
         setViewportView(mainPanel);
         dayPanelMap.values().forEach(this::addResizeListener);
@@ -36,6 +36,7 @@ public class WeekScrollTab extends JScrollPane {
                     SwingUtilities.invokeLater(WeekScrollTab.this::refresh);
                 } catch (InterruptedException e) {
                     logger.logError(new RuntimeException(e));
+                    Thread.currentThread().interrupt(); // Restore interrupted status
                 }
             }
         }).start();
@@ -112,8 +113,7 @@ public class WeekScrollTab extends JScrollPane {
         mainPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
-                int width = mainPanel.getWidth();
-                dayPanel.setPreferredSize(new Dimension(width - width/10, 200));
+                // The DayPanel will be stretched by the BoxLayout, so we can control padding via its border.
                 mainPanel.revalidate();
                 mainPanel.repaint();
             }

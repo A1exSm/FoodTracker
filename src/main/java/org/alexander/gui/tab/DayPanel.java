@@ -21,7 +21,11 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -29,6 +33,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Represents a panel for a single day, displaying meals and snacks in a table.
+ * It provides context menus for interacting with the data, such as adding or removing
+ * meals, snacks, and food items.
+ * The design is focused on a clean, spacious, and modern light theme.
+ */
 class DayPanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
@@ -39,7 +49,13 @@ class DayPanel extends JPanel {
     private final FoodSnackDao foodSnackDao = new FoodSnackDao();
     private final FoodDao foodDao = new FoodDao();
     private List<Object> mealAndSnackObjects = new ArrayList<>();
+    private List<List<Food>> foodsForColumns = new ArrayList<>();
 
+    /**
+     * Constructs a DayPanel.
+     * @param day The Day object this panel represents.
+     * @param week The Week object this day belongs to, used for context in dialogs.
+     */
     DayPanel(Day day, Week week) {
         super();
         this.day = day;
@@ -50,21 +66,52 @@ class DayPanel extends JPanel {
         initTable();
         refreshTable();
         JScrollPane scrollPane = new JScrollPane(table);
-        titledBorder.setTitleColor(Color.white);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        // Use a very light gray for the scroll pane background to blend with the panel
+        scrollPane.getViewport().setBackground(new Color(250, 250, 250));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    /**
+     * Initializes the panel's appearance and layout with generous padding for a spacious feel.
+     */
     private void init() {
-        setBorder(titledBorder);
-        setBackground(Color.black);
+        titledBorder.setTitleFont(new Font("SansSerif", Font.BOLD, 18));
+        titledBorder.setTitleColor(new Color(80, 80, 80));
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(15, 15, 15, 15), // Increased padding
+                titledBorder
+        ));
+        setBackground(new Color(250, 250, 250)); // A soft, off-white background
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(Short.MAX_VALUE, 200));
     }
 
+    /**
+     * Initializes the JTable's properties, including renderers, increased row height,
+     * and mouse listeners for context menus.
+     */
     private void initTable() {
         table.getTableHeader().setReorderingAllowed(false);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setFillsViewportHeight(true);
+        table.setBackground(new Color(255, 255, 255)); // White table background
+        table.setForeground(new Color(51, 51, 51)); // Dark gray text for readability
+        table.setGridColor(new Color(220, 220, 220)); // Light grid lines
+        table.setRowHeight(30); // Increased row height for spacing
+        table.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        table.setCellSelectionEnabled(true);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionBackground(new Color(200, 225, 255)); // A soft blue for selection
+        table.setSelectionForeground(new Color(51, 51, 51));
+
+        // Style the table header for a modern look
+        JTableHeader header = table.getTableHeader();
+        header.setBackground(new Color(242, 242, 242)); // Light gray header
+        header.setForeground(new Color(80, 80, 80)); // Darker gray text
+        header.setFont(new Font("SansSerif", Font.BOLD, 14));
+        header.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+
+
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -72,9 +119,9 @@ class DayPanel extends JPanel {
                     Point point = e.getPoint();
                     int row = table.rowAtPoint(point);
                     int column = table.columnAtPoint(point);
-                    if (column != -1) {
+                    if (column != -1 && row != -1) {
                         table.setColumnSelectionInterval(column, column);
-                        if (row != -1) table.setRowSelectionInterval(row, row);
+                        table.setRowSelectionInterval(row, row);
                         showPopupMenu(e, row, column);
                     }
                 }
@@ -82,6 +129,12 @@ class DayPanel extends JPanel {
         });
     }
 
+    /**
+     * Displays a context-sensitive popup menu based on the clicked cell.
+     * @param e The MouseEvent that triggered the menu.
+     * @param row The row index of the clicked cell.
+     * @param col The column index of the clicked cell.
+     */
     private void showPopupMenu(MouseEvent e, int row, int col) {
         JPopupMenu popupMenu = new JPopupMenu();
         if (col >= mealAndSnackObjects.size()) {
@@ -138,6 +191,11 @@ class DayPanel extends JPanel {
         popupMenu.show(e.getComponent(), e.getX(), e.getY());
     }
 
+    /**
+     * Opens a dialog to select an existing food item to add to a meal or snack.
+     * The search functionality is case-insensitive.
+     * @param mealOrSnackObject The meal or snack to add the food to.
+     */
     private void addExistingFoodToMealOrSnack(Object mealOrSnackObject) {
         List<Food> allFoods = foodDao.getFoodList();
         allFoods.sort(Comparator.comparing(Food::getName, String.CASE_INSENSITIVE_ORDER));
@@ -189,7 +247,7 @@ class DayPanel extends JPanel {
             }
         });
 
-        JPanel searchPanel = new JPanel(new BorderLayout());
+        JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
         searchPanel.add(new JLabel("Search:"), BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
         searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -201,6 +259,11 @@ class DayPanel extends JPanel {
         dialog.setVisible(true);
     }
 
+    /**
+     * Adds a food item to a meal or snack and refreshes the table.
+     * @param food The food to add.
+     * @param mealOrSnackObject The meal or snack to add the food to.
+     */
     private void addFoodToMealOrSnack(Food food, Object mealOrSnackObject) {
         if (mealOrSnackObject instanceof Meal meal) {
             foodMealDao.addFoodMeal(food, meal, 1.0);
@@ -210,13 +273,23 @@ class DayPanel extends JPanel {
         refreshTable();
     }
 
+    /**
+     * Opens a dialog to create a new food item and add it to the meal or snack.
+     * @param mealOrSnackObject The meal or snack to add the new food to.
+     */
     private void addNewFoodToMealOrSnack(Object mealOrSnackObject) {
         FoodDialog dialog = new FoodDialog(SwingUtilities.getWindowAncestor(this));
-        // This requires FoodDialog to be modal and to return the new food.
-        // For now, just refreshing the table will pick up the new food if added.
-        refreshTable();
+        Food newFood = dialog.getNewFood();
+        if (newFood != null) {
+            addFoodToMealOrSnack(newFood, mealOrSnackObject);
+        }
     }
-
+    /**
+     * Retrieves the number of servings for a specific food within a meal or snack.
+     * @param food The food item.
+     * @param mealOrSnackObject The containing meal or snack.
+     * @return The number of servings, or 1.0 as a default.
+     */
     private double getNumServings(Food food, Object mealOrSnackObject) {
         if (mealOrSnackObject instanceof Meal meal) {
             FoodMeal fm = foodMealDao.getFoodMeal(food.getName(), meal.getId());
@@ -232,6 +305,10 @@ class DayPanel extends JPanel {
         return 1.0; // Default to 1.0 if not found
     }
 
+    /**
+     * Deletes a meal or snack after user confirmation.
+     * @param mealOrSnackObject The meal or snack to delete.
+     */
     private void deleteMealOrSnack(Object mealOrSnackObject) {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Are you sure you want to delete this item and all associated foods?",
@@ -239,14 +316,29 @@ class DayPanel extends JPanel {
 
         if (confirm == JOptionPane.YES_OPTION) {
             if (mealOrSnackObject instanceof Meal meal) {
+                // First delete associations in FOOD_MEAL
+                foodMealDao.getFoodMealList().stream()
+                        .filter(fm -> fm.getMealId() == meal.getId())
+                        .forEach(foodMealDao::deleteFoodMeal);
+                // Then delete the meal itself
                 new MealDao().deleteMeal(meal);
             } else if (mealOrSnackObject instanceof Snack snack) {
+                // First delete associations in FOOD_SNACK
+                foodSnackDao.getFoodSnackList().stream()
+                        .filter(fs -> fs.getSnackId() != null && fs.getSnackId().equals(snack.getId()))
+                        .forEach(foodSnackDao::deleteFoodSnack);
+                // Then delete the snack itself
                 new SnackDao().deleteSnack(snack);
             }
             refreshTable();
         }
     }
 
+    /**
+     * Removes a food item from its containing meal or snack.
+     * @param food The food to remove.
+     * @param mealOrSnackObject The meal or snack to remove from.
+     */
     private void removeFoodFromMealOrSnack(Food food, Object mealOrSnackObject) {
         if (mealOrSnackObject instanceof Meal meal) {
             foodMealDao.deleteFoodMeal(food.getName(), meal.getId());
@@ -256,6 +348,10 @@ class DayPanel extends JPanel {
         refreshTable();
     }
 
+    /**
+     * Refreshes the entire table by re-fetching data from the database,
+     * rebuilding the model, applying custom cell renderers, and resizing columns.
+     */
     public void refreshTable() {
         MealDao mealDao = new MealDao();
         SnackDao snackDao = new SnackDao();
@@ -275,7 +371,7 @@ class DayPanel extends JPanel {
 
         int colCount = mealAndSnackObjects.size() + 1; // +1 for the "Add New" column
         int maxFoods = 0;
-        List<List<Food>> foodsForColumns = new ArrayList<>();
+        foodsForColumns = new ArrayList<>();
 
         for (Object obj : mealAndSnackObjects) {
             List<Food> foods = new ArrayList<>();
@@ -330,16 +426,103 @@ class DayPanel extends JPanel {
         model.setValueAt("+", 0, colCount-1);
 
 
-        table.setDefaultRenderer(Object.class, (table, value, isSelected, hasFocus, row, column) -> {
-            JLabel label = new JLabel();
-            if (value instanceof Food food) {
-                label.setText(food.getName());
-            } else if (value != null) {
-                label.setText(value.toString());
-            }
-            return label;
-        });
-
+        table.setDefaultRenderer(Object.class, new DayTableCellRenderer(foodsForColumns));
         table.getTableHeader().repaint();
+
+        // Adjust column widths to fit content
+        packColumns(table);
+    }
+
+    /**
+     * Adjusts the width of each column to fit the widest content, including the header.
+     * Adds extra padding for a more spacious and readable layout.
+     *
+     * @param table The JTable whose columns are to be resized.
+     */
+    private void packColumns(JTable table) {
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            TableColumn tableColumn = table.getColumnModel().getColumn(column);
+            int preferredWidth = 0;
+
+            // Get width of header
+            TableCellRenderer headerRenderer = tableColumn.getHeaderRenderer();
+            if (headerRenderer == null) {
+                headerRenderer = table.getTableHeader().getDefaultRenderer();
+            }
+            Component headerComp = headerRenderer.getTableCellRendererComponent(
+                    table, tableColumn.getHeaderValue(), false, false, 0, column);
+            preferredWidth = headerComp.getPreferredSize().width;
+
+            // Get width of cells
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = table.getCellRenderer(row, column);
+                Component c = table.prepareRenderer(cellRenderer, row, column);
+                int width = c.getPreferredSize().width + table.getIntercellSpacing().width;
+                preferredWidth = Math.max(preferredWidth, width);
+            }
+
+            // Set the final preferred width with some padding
+            tableColumn.setPreferredWidth(preferredWidth + 15);
+        }
+    }
+}
+
+/**
+ * Custom cell renderer for the DayPanel's table to provide specific styling
+ * for different cell types (headers, food items, etc.) in a light, modern theme.
+ */
+class DayTableCellRenderer extends DefaultTableCellRenderer {
+    private final List<List<Food>> foodsForColumns;
+
+    public DayTableCellRenderer(List<List<Food>> foodsForColumns) {
+        this.foodsForColumns = foodsForColumns;
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        // Use a JLabel for more control over padding and alignment
+        JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10)); // Add padding within cells
+        label.setHorizontalAlignment(JLabel.CENTER);
+        label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        label.setForeground(new Color(51, 51, 51));
+
+        // Style for the top row (Meal/Snack type)
+        if (row == 0) {
+            label.setFont(new Font("SansSerif", Font.BOLD, 14));
+            label.setBackground(new Color(235, 235, 235)); // A slightly darker gray for the header row
+            label.setForeground(new Color(60, 60, 60));
+        } else {
+            // Alternating row colors for better readability ("Zebra stripes")
+            if (row % 2 == 0) {
+                label.setBackground(new Color(248, 248, 248));
+            } else {
+                label.setBackground(Color.WHITE);
+            }
+        }
+
+        // Override background for selected cells
+        if (isSelected) {
+            label.setBackground(new Color(200, 225, 255)); // Soft blue for selection
+        }
+
+        // Render Food objects with their names, otherwise use toString()
+        if (value instanceof Food food) {
+            label.setText(food.getName());
+            label.setFont(table.getFont());
+            label.setForeground(new Color(51, 51, 51));
+        } else if (value != null) {
+            label.setText(value.toString());
+        } else {
+            label.setText(""); // Default to empty
+            // Check if this is the actionable "add" cell
+            if (column < foodsForColumns.size() && row == foodsForColumns.get(column).size() + 1) {
+                label.setText("+ Add Food");
+                label.setFont(new Font("SansSerif", Font.ITALIC, 12));
+                label.setForeground(Color.GRAY);
+            }
+        }
+
+        return label;
     }
 }

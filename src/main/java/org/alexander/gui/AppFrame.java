@@ -2,6 +2,7 @@ package org.alexander.gui;
 
 import org.alexander.AppState;
 import org.alexander.database.DatabaseComparer;
+import org.alexander.database.DatabaseManager;
 import org.alexander.gui.dialogs.ChangesSummaryDialog;
 import org.alexander.logging.CentralLogger;
 
@@ -25,17 +26,20 @@ public class AppFrame extends JFrame {
     }
 
     /**
-     * Handles the application closing sequence. It compares the live and saved databases,
-     * shows a summary of changes if any exist, and prompts the user to save, discard, or cancel.
+     * Handles the application closing sequence. It closes the database connection,
+     * compares the live and saved databases, shows a summary of changes if any exist,
+     * and prompts the user to save, discard, or cancel.
      */
     public void closeOperation() {
+        // Ensure the database connection is closed to release the file lock
+        DatabaseManager.closeConnection();
+
         Path liveDbPath = Paths.get("src/main/resources/data/data.sqlite");
         Path userDbPath = Paths.get(System.getProperty("user.home"), "FoodTracker", "data.sqlite");
 
         try {
             DatabaseComparer comparer = new DatabaseComparer(liveDbPath, userDbPath);
             comparer.compare();
-
             if (comparer.hasChanges()) {
                 ChangesSummaryDialog summaryDialog = new ChangesSummaryDialog(this, comparer.getAdditions(), comparer.getDeletions());
                 int result = summaryDialog.showDialog();
